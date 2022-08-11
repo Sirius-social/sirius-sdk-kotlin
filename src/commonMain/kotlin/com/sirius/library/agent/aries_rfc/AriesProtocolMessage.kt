@@ -94,6 +94,12 @@ abstract class AriesProtocolMessage : Message {
     companion object {
         const val DEF_VERSION = "1.0"
         const val ARIES_DOC_URI = "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/"
+
+        fun put(o: Any?, name: String?, json: JSONObject) {
+            if (o != null) {
+                json.put(name!!, o)
+            }
+        }
     }
 }
 

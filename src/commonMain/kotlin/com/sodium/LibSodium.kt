@@ -4,9 +4,6 @@ import com.ionspin.kotlin.crypto.aead.AuthenticatedEncryptionWithAssociatedData
 import com.ionspin.kotlin.crypto.box.Box
 import com.ionspin.kotlin.crypto.secretstream.SecretStream
 import com.ionspin.kotlin.crypto.signature.Signature
-import com.ionspin.kotlin.crypto.signature.SignatureKeyPair
-import com.ionspin.kotlin.crypto.signature.crypto_sign_PUBLICKEYBYTES
-import com.ionspin.kotlin.crypto.signature.crypto_sign_SECRETKEYBYTES
 import com.ionspin.kotlin.crypto.util.LibsodiumRandom
 import com.sirius.library.utils.Key
 import com.sirius.library.utils.KeyPair
@@ -117,15 +114,16 @@ class LibSodium {
     @Throws(SodiumException::class)
     fun cryptoSignSeedKeypair(seed: ByteArray?): KeyPair {
        val pair =   Signature.seedKeypair(seed?.toUByteArray() ?: UByteArray(0))
-       /* val publicKey = randomBytesBuf(crypto_sign_PUBLICKEYBYTES)
-        val secretKey = randomBytesBuf(crypto_sign_SECRETKEYBYTES)
-        if (!cryptoSignSeedKeypair(publicKey, secretKey, seed)) {
-            throw SodiumException("Could not generate a signing keypair with a seed.")
-        }*/
         println("cryptoSignSeedKeypair pair="+pair)
         return KeyPair(Key.fromBytes(pair.publicKey.toByteArray()), Key.fromBytes(pair.secretKey.toByteArray()))
     }
 
 
+    @Throws(SodiumException::class)
+    fun cryptoSignKeypair(): KeyPair {
+        val pair =   Signature.keypair()
+        println("cryptoSignKeypair pair="+pair)
+        return KeyPair(Key.fromBytes(pair.publicKey.toByteArray()), Key.fromBytes(pair.secretKey.toByteArray()))
+    }
 
 }

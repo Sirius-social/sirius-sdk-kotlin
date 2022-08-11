@@ -50,6 +50,7 @@ abstract class ProverScenario(val eventStorage : EventStorageAbstract) : BaseSce
         val requestPresentation = event?.second as? RequestPresentationMessage
         val ttl = 60
         val pairwise = PairwiseHelper.getInstance().getPairwise(event?.first)
+        //TODO явно не label он может меняться
         val masterSecretId: String =
             HashUtils.generateHash(SiriusSDK.getInstance().label?:"")
         println("prover masterSecretId="+masterSecretId)

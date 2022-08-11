@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
 
 class Message(msg: String) : AriesProtocolMessage(msg) {
     companion object {
+        val PROTOCOL  = "basicmessage"
         fun builder(): Builder<*> {
             return MessageBuilder()
         }

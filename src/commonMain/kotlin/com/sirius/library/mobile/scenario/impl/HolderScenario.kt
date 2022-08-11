@@ -40,6 +40,7 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
 
     override fun start(event: Event): Pair<Boolean, String?> {
         try {
+            //TODO явно не label он может меняться
             val masterSecretId: String =
                 HashUtils.generateHash(SiriusSDK.getInstance().label?:"")
             SiriusSDK.getInstance().context.anonCreds
@@ -70,6 +71,7 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         val locale: String = "en"
         val event = eventStorage.getEvent(id)
         val pairwise  : Pairwise?= PairwiseHelper.getInstance().getPairwise(event?.first)
+        //TODO явно не label он может меняться
         val masterSecretId: String =
             HashUtils.generateHash(SiriusSDK.getInstance().label?:"")
         println("holder masterSecretId="+masterSecretId)

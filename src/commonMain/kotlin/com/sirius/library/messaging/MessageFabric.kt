@@ -10,6 +10,8 @@ import com.sirius.library.agent.aries_rfc.feature_0113_question_answer.messages.
 import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.messages.*
 import com.sirius.library.agent.aries_rfc.feature_0211_mediator_coordination_protocol.*
 import com.sirius.library.agent.consensus.simple.messages.*
+import com.sirius.library.n_wise.messages.BaseNWiseMessage
+import com.sirius.library.n_wise.messages.LedgerUpdateNotify
 import kotlin.reflect.KClass
 
 class MessageFabric {
@@ -26,7 +28,7 @@ class MessageFabric {
         }
 
         fun registerAllMessagesClass(){
-           Message.registerMessageClass(com.sirius.library.agent.aries_rfc.feature_0095_basic_message.Message::class, "basicmessage", "message"){
+           Message.registerMessageClass(com.sirius.library.agent.aries_rfc.feature_0095_basic_message.Message::class, com.sirius.library.agent.aries_rfc.feature_0095_basic_message.Message.PROTOCOL, "message"){
                com.sirius.library.agent.aries_rfc.feature_0095_basic_message.Message(it)
            }
             Message.registerMessageClass(Ping::class, Ping.PROTOCOL, "ping"){
@@ -200,6 +202,24 @@ class MessageFabric {
             ){
                 PresentationAck(it)
             }
+
+            Message.registerMessageClass(
+                com.sirius.library.n_wise.messages.Invitation::class,
+                BaseNWiseMessage.PROTOCOL,
+                "invitation"
+            ){
+                com.sirius.library.n_wise.messages.Invitation(it)
+            }
+
+            Message.registerMessageClass(
+                LedgerUpdateNotify::class,
+                BaseNWiseMessage.PROTOCOL,
+                "ledger-update-notify"
+            ){
+                LedgerUpdateNotify(it)
+            }
+
+
         }
     }
 }
