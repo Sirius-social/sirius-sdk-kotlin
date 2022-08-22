@@ -3,13 +3,10 @@ package com.sirius.library.did_doc
 import com.sirius.library.agent.wallet.abstract_wallet.AbstractCrypto
 import com.sirius.library.encryption.IndyWalletSigner
 import com.sirius.library.hub.Context
+import com.sirius.library.utils.*
 import com.sirius.library.utils.Base58.decode
 import com.sirius.library.utils.Base58.encode
-import com.sirius.library.utils.IotaUtils
 import com.sirius.library.utils.IotaUtils.node
-import com.sirius.library.utils.JSONArray
-import com.sirius.library.utils.JSONObject
-import com.sirius.library.utils.Logger
 import org.iota.client.Client
 import org.iota.client.Message
 import org.iota.client.MessageId
@@ -29,9 +26,10 @@ class IotaPublicDidDoc : PublicDidDoc {
     }
 
     private constructor(msg: Message) {
-        val obj = JSONObject(String(msg.payload().get().asIndexation().data()))
-        payload = obj.optJSONObject("doc")
-        meta = obj.optJSONObject("meta")
+        val string = StringUtils.bytesToString(msg.payload().asIndexation().data(), StringUtils.CODEC.UTF_8)
+        val obj = JSONObject(string)
+        payload = obj.optJSONObject("doc") ?: JSONObject()
+        meta = obj.optJSONObject("meta") ?: JSONObject()
         previousMessageId = msg.id().toString()
         tag = payload.optString("id")!!.substring("did:iota:".length)
         val verificationMethod: JSONObject? = getVerificationMethod(obj)
@@ -45,8 +43,9 @@ class IotaPublicDidDoc : PublicDidDoc {
         val o: JSONObject = generateIntegrationMessage(context.crypto) ?: return false
         val iota: Client = node()
         return try {
+            val bytes =  StringUtils.stringToBytes(o.toString(), StringUtils.CODEC.UTF_8)
             val message: Message = iota.message().withIndexString(tag)
-                .withData(o.toString().getBytes(StandardCharsets.UTF_8)).finish()
+                .withData(bytes).finish()
             previousMessageId = message.id().toString()
             saveToWallet(context.nonSecrets)
             true
@@ -102,11 +101,12 @@ class IotaPublicDidDoc : PublicDidDoc {
                 for (msgId in fetchedMessageIds) {
                     val msg: Message = node().message.data(msgId)
                     if (msg.payload()!=null) {
-                        val obj = JSONObject(String(msg.payload().get().asIndexation().data()))
+                      val string =   StringUtils.bytesToString(msg.payload()!!.asIndexation().data(), StringUtils.CODEC.UTF_8)
+                        val obj = JSONObject(string)
                         val previousMessageId: String =
-                            obj.optJSONObject("meta").optString("previousMessageId", "")
+                            obj.optJSONObject("meta")?.optString("previousMessageId", "") ?: ""
                         if (!map.containsKey(previousMessageId)) map[previousMessageId] =
-                           listOf(msg) else map[previousMessageId]!!
+                           mutableListOf(msg) else map[previousMessageId]!!
                             .add(msg)
                     }
                 }
@@ -116,12 +116,12 @@ class IotaPublicDidDoc : PublicDidDoc {
                 while (!map.isEmpty()) {
                     if (map.containsKey(prevMessageId)) {
                         val finalPrevMessage: Message? = prevMessage
-                        val list: List<Message> = map[prevMessageId].stream().filter { m ->
+                        val list: List<Message> = map[prevMessageId]?.filter { m ->
                             checkMessage(
                                 m,
                                 finalPrevMessage
                             )
-                        }.sorted(IotaUtils.msgComparator).collect(Collectors.toList())
+                        }?.sortedWith(IotaUtils.msgComparator).orEmpty()
                         if (list.isEmpty()) {
                             return prevMessage
                         } else {
@@ -165,40 +165,40 @@ class IotaPublicDidDoc : PublicDidDoc {
         }
 
         private fun isFirstMessage(jsonMsg: JSONObject): Boolean {
-            return jsonMsg.optJSONObject("meta").has("previousMessageId")
+            return jsonMsg.optJSONObject("meta")?.has("previousMessageId") ?: false
         }
 
         private fun checkFirstMessageTag(jsonMsg: JSONObject): Boolean {
             val verificationMethod: JSONObject = getVerificationMethod(jsonMsg)
                 ?: return false
             val pubKeyMultibase: String? = verificationMethod.optString("publicKeyMultibase")
-            val tag = tagFromId(jsonMsg.optJSONObject("doc").optString("id"))
+            val tag = tagFromId(jsonMsg.optJSONObject("doc")?.optString("id")?:"")
             return tag == IotaUtils.generateTag(Multibase.decode(pubKeyMultibase))
         }
 
         private fun checkMessage(integrationMsg: Message, prevIntegrationMsg: Message?): Boolean {
             var prevIntegrationMsg: Message? = prevIntegrationMsg
             if (prevIntegrationMsg == null) prevIntegrationMsg = integrationMsg
-            if (!integrationMsg.payload().isPresent() && !prevIntegrationMsg.payload()
-                    .isPresent()
+            if (integrationMsg.payload() == null && prevIntegrationMsg.payload() == null
             ) return false
-            val integrationMsgJson =
-                JSONObject(String(integrationMsg.payload().get().asIndexation().data()))
-            val prevIntegrationMsgJson =
-                JSONObject(String(prevIntegrationMsg.payload().get().asIndexation().data()))
+            val integrationMsgString = StringUtils.bytesToString(integrationMsg.payload()?.asIndexation()?.data()?: ByteArray(0), StringUtils.CODEC.UTF_8)
+            val integrationMsgJson = JSONObject(integrationMsgString)
+
+            val  prevIntegrationMsgString =  StringUtils.bytesToString(prevIntegrationMsg.payload()?.asIndexation()?.data()?: ByteArray(0), StringUtils.CODEC.UTF_8)
+            val prevIntegrationMsgJson = JSONObject(prevIntegrationMsgString)
             if (isFirstMessage(integrationMsgJson) && !checkFirstMessageTag(integrationMsgJson)) return false
             val verificationMethodId: String =
-                integrationMsgJson.optJSONObject("proof").optString("verificationMethod")
+                integrationMsgJson.optJSONObject("proof")?.optString("verificationMethod")?: ""
             val verificationMethod: JSONObject =
                 getVerificationMethod(prevIntegrationMsgJson, verificationMethodId)
                     ?: return false
-            val pubKeyMultibase: String = verificationMethod.optString("publicKeyMultibase")
+            val pubKeyMultibase: String = verificationMethod.optString("publicKeyMultibase")?:""
             val ldVerifier: LdVerifier<JcsEd25519Signature2020SignatureSuite> =
                 JcsEd25519Signature2020LdVerifier(Multibase.decode(pubKeyMultibase))
             val ldObject: JsonLDObject = JsonLDObject.fromJson(integrationMsgJson.toString())
             try {
                 return ldVerifier.verify(ldObject)
-            } catch (e: java.lang.Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
             return false
