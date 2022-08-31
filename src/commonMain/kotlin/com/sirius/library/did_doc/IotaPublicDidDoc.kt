@@ -1,7 +1,6 @@
 package com.sirius.library.did_doc
 
 import com.sirius.library.agent.wallet.abstract_wallet.AbstractCrypto
-import com.sirius.library.encryption.IndyWalletSigner
 import com.sirius.library.hub.Context
 import com.sirius.library.utils.*
 import com.sirius.library.utils.Base58.decode
@@ -55,7 +54,6 @@ class IotaPublicDidDoc : PublicDidDoc {
     }
 
     private fun generateIntegrationMessage(crypto: AbstractCrypto): JSONObject? {
-        val byteSigner: ByteSigner = IndyWalletSigner(crypto, encode(publicKey))
         val capabilityInvocation = JSONArray()
         capabilityInvocation.put(
             JSONObject()
@@ -72,19 +70,11 @@ class IotaPublicDidDoc : PublicDidDoc {
             meta.put("previousMessageId", previousMessageId)
         }
         meta.put("updated", dateFormat.format(Date()))
-        val ldSigner: LdSigner = JcsEd25519Signature2020LdSigner(byteSigner)
-        ldSigner.setVerificationMethod(URI.create(payload.optString("id") + "#sign-0"))
-        val resMsg: JSONObject = JSONObject().put("doc", payload).put("meta", meta)
-        val jsonLdObject: JsonLDObject = JsonLDObject.fromJson(resMsg.toString())
-        var proof: JSONObject? = null
-        try {
-            proof = JSONObject(ldSigner.sign(jsonLdObject).toJson())
-            resMsg.put("proof", proof)
-            return resMsg
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return null
+        val signer = JcsEd25519Signature2020LdSigner()
+        signer.setVerificationMethod(URI.create(payload.optString("id") + "#sign-0"))
+        val resMsg = JSONObject().put("doc", payload).put("meta", meta)
+        signer.sign(resMsg, publicKey, crypto)
+        return resMsg
     }
 
     companion object {
@@ -176,32 +166,26 @@ class IotaPublicDidDoc : PublicDidDoc {
             return tag == IotaUtils.generateTag(Multibase.decode(pubKeyMultibase))
         }
 
-        private fun checkMessage(integrationMsg: Message, prevIntegrationMsg: Message?): Boolean {
+        private fun checkMessage(integrationMsg: Message, prevIntegrationMsg: Message): Boolean {
             var prevIntegrationMsg: Message? = prevIntegrationMsg
             if (prevIntegrationMsg == null) prevIntegrationMsg = integrationMsg
-            if (integrationMsg.payload() == null && prevIntegrationMsg.payload() == null
+            if (integrationMsg.payload()==null && prevIntegrationMsg.payload() == null
             ) return false
-            val integrationMsgString = StringUtils.bytesToString(integrationMsg.payload()?.asIndexation()?.data()?: ByteArray(0), StringUtils.CODEC.UTF_8)
-            val integrationMsgJson = JSONObject(integrationMsgString)
-
-            val  prevIntegrationMsgString =  StringUtils.bytesToString(prevIntegrationMsg.payload()?.asIndexation()?.data()?: ByteArray(0), StringUtils.CODEC.UTF_8)
-            val prevIntegrationMsgJson = JSONObject(prevIntegrationMsgString)
+            val integrationMsgJson =
+                JSONObject(StringUtils.bytesToString(integrationMsg.payload()?.asIndexation()?.data()?:ByteArray(0),
+                    StringUtils.CODEC.UTF_8))
+            val prevIntegrationMsgJson =
+                JSONObject(StringUtils.bytesToString(prevIntegrationMsg.payload()?.asIndexation()?.data()?:ByteArray(0),
+                    StringUtils.CODEC.UTF_8))
             if (isFirstMessage(integrationMsgJson) && !checkFirstMessageTag(integrationMsgJson)) return false
-            val verificationMethodId: String =
-                integrationMsgJson.optJSONObject("proof")?.optString("verificationMethod")?: ""
-            val verificationMethod: JSONObject =
+            val verificationMethodId =
+                integrationMsgJson.optJSONObject("proof")!!.optString("verificationMethod")
+            val verificationMethod =
                 getVerificationMethod(prevIntegrationMsgJson, verificationMethodId)
                     ?: return false
-            val pubKeyMultibase: String = verificationMethod.optString("publicKeyMultibase")?:""
-            val ldVerifier: LdVerifier<JcsEd25519Signature2020SignatureSuite> =
-                JcsEd25519Signature2020LdVerifier(Multibase.decode(pubKeyMultibase))
-            val ldObject: JsonLDObject = JsonLDObject.fromJson(integrationMsgJson.toString())
-            try {
-                return ldVerifier.verify(ldObject)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            return false
+            val pubKeyMultibase = verificationMethod.optString("publicKeyMultibase")
+            val verifier = JcsEd25519Signature2020LdVerifier(Multibase.decode(pubKeyMultibase))
+            return verifier.verify(integrationMsgJson)
         }
     }
 }

@@ -3,6 +3,10 @@ package com.sirius.library.n_wise
 import com.sirius.library.n_wise.transactions.*
 import com.sirius.library.utils.Base58.decode
 import com.sirius.library.utils.JSONObject
+import com.sirius.library.utils.JcsEd25519Signature2020LdVerifier
+
+
+
 
 
 class NWiseStateMachine {
@@ -33,16 +37,9 @@ class NWiseStateMachine {
         return if (created) false else check(tx, tx.creatorVerkey)
     }
 
-    private fun check(o: JSONObject, verkey: ByteArray?): Boolean {
-        val ldVerifier: LdVerifier<JcsEd25519Signature2020SignatureSuite> =
-            JcsEd25519Signature2020LdVerifier(verkey)
-        val ldObject: JsonLDObject = JsonLDObject.fromJson(o.toString())
-        try {
-            return ldVerifier.verify(ldObject)
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-        return false
+    private fun check(o: JSONObject, verkey: ByteArray): Boolean {
+        val verifier = JcsEd25519Signature2020LdVerifier(verkey)
+        return verifier.verify(o)
     }
 
     fun check(tx: AddParticipantTx): Boolean {
@@ -51,7 +48,7 @@ class NWiseStateMachine {
         val verificationMethod: String? = proof?.optString("verificationMethod")
         if (invitationKeys.containsKey(verificationMethod)) {
             val verkey = invitationKeys[verificationMethod]
-            return check(tx, verkey)
+            return check(tx, verkey?: ByteArray(0))
         }
         val verkey = getVerificationMethodPublicKey(verificationMethod?:"") ?: return false
         return check(tx, verkey)
@@ -174,21 +171,21 @@ class NWiseStateMachine {
 
     fun resolveNickname(verkey: ByteArray?): String? {
         for (p in participants) {
-            if (Arrays.equals(p.verkey, verkey)) return p.nickname
+            if (p.verkey.contentEquals(verkey)) return p.nickname
         }
         return null
     }
 
     fun resolveParticipant(verkey: ByteArray?): NWiseParticipant? {
         for (p in participants) {
-            if (Arrays.equals(p.verkey, verkey)) return p
+            if (p.verkey.contentEquals(verkey)) return p
         }
         return null
     }
 
     fun resolveDid(verkey: ByteArray?): String? {
         for (p in participants) {
-            if (Arrays.equals(p.verkey, verkey)) return p.did
+            if (p.verkey.contentEquals(verkey)) return p.did
         }
         return null
     }
