@@ -3,13 +3,11 @@ package com.sirius.library.utils
 import com.sirius.library.utils.Base58.encode
 import com.sodium.LibSodium
 
-import com.goterl.lazycode.lazysodium.LazySodiumJava;
-import com.sirius.sdk.naclJava.LibSodium;
-import org.bitcoinj.core.Base58;
+
 import org.iota.client.Client;
 import org.iota.client.Message;
 import org.iota.client.MessageMetadata;
-import org.scijava.nativelib.NativeLoader;
+
 
 
 
@@ -30,8 +28,8 @@ object IotaUtils {
 
     fun generateTag(key: ByteArray): String {
         val s = LibSodium.getInstance()
-        val outputBytes = ByteArray(32)
-        s.cryptoGenericHash(outputBytes, 32, key, key.size, null, 0)
+      //  val outputBytes = ByteArray(32)
+        val outputBytes =  s.cryptoGenericHash(32, key, null)
         return encode(outputBytes)
     }
 

@@ -11,13 +11,16 @@ import com.sirius.library.utils.Base58.decode
 import com.sirius.library.utils.Base58.encode
 import com.sirius.library.utils.IotaUtils
 import com.sirius.library.utils.JSONObject
+import com.sirius.library.utils.StringUtils
+import org.iota.client.Client
+import org.iota.client.MessageId
 
 
 class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
     NWise() {
     override val restoreAttach: JSONObject
         get() = JSONObject().put("tag",IotaUtils. generateTag(stateMachine!!.genesisCreatorVerkey ?: ByteArray(0)))
-            .put("myVerkeyBase58", encode(myVerkey))
+            .put("myVerkeyBase58", encode(myVerkey ?: ByteArray(0)))
 
     override fun fetchFromLedger(): Boolean {
         stateMachine = processTransactions(IotaUtils.generateTag(stateMachine!!.genesisCreatorVerkey ?: ByteArray(0))).first
@@ -56,11 +59,11 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
                 val o: JSONObject =
                     JSONObject().put("transaction", genesisTx).put("meta", JSONObject())
                 iota.message().withIndexString(tag)
-                    .withData(o.toString().getBytes(StandardCharsets.UTF_8)).finish()
+                    .withData(StringUtils.stringToBytes(o.toString(), StringUtils.CODEC.UTF_8)).finish()
                 val stateMachine = NWiseStateMachine()
                 stateMachine.append(genesisTx)
                 IotaNWise(stateMachine, decode(second))
-            } catch (ex: java.lang.Exception) {
+            } catch (ex: Exception) {
                 null
             }
         }
@@ -82,7 +85,7 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
             tx.didDoc = didDoc
             tx.nickname = nickname
             tx.sign(invitation.invitationKeyId, invitation.invitationPrivateKey)
-            val (first1, second1) = pushTransactionToIota(tx, attach.tag)
+            val (first1, second1) = pushTransactionToIota(tx, attach.tag?:"")
             return if (first1) {
                 val nWise = IotaNWise(second1, decode(second))
                 nWise.notify(context)
@@ -104,16 +107,16 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
             var prevMessageId = ""
             return try {
                 val fetchedMessageIds: Array<MessageId> =
-                    IotaUtils.node().getMessage().indexString(tag)
+                    IotaUtils.node().message.indexString(tag?:"")
                 val map: HashMap<String, MutableList<org.iota.client.Message>> = HashMap()
                 for (msgId in fetchedMessageIds) {
-                    val msg: org.iota.client.Message = IotaUtils.node().getMessage().data(msgId)
-                    if (msg.payload().isPresent()) {
-                        val obj = JSONObject(String(msg.payload().get().asIndexation().data()))
+                    val msg: org.iota.client.Message = IotaUtils.node().message.data(msgId)
+                    if (msg.payload()!=null) {
+                        val obj = JSONObject(StringUtils.bytesToString(msg.payload()!!.asIndexation().data(),StringUtils.CODEC.UTF_8))
                         val previousMessageId: String =
-                            obj.optJSONObject("meta").optString("previousMessageId", "")
+                            obj.optJSONObject("meta")?.optString("previousMessageId", "") ?:""
                         if (!map.containsKey(previousMessageId)) map[previousMessageId] =
-                            Arrays.asList(msg) else map[previousMessageId]!!
+                            mutableListOf(msg) else map[previousMessageId]!!
                             .add(msg)
                     }
                 }
@@ -122,23 +125,21 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
                 while (!map.isEmpty()) {
                     if (map.containsKey(prevMessageId)) {
                         val list: List<org.iota.client.Message> =
-                            map[prevMessageId].stream().filter { m ->
+                            map[prevMessageId]?.filter { m ->
                                 checkMessage(
                                     m,
                                     stateMachine
                                 )
-                            }.sorted(IotaUtils.msgComparator).collect(Collectors.toList())
+                            }?.sortedWith(IotaUtils.msgComparator).orEmpty()
                         if (list.isEmpty()) {
                             return Pair(stateMachine, prevMessageId)
                         } else {
                             map.remove(prevMessageId)
                             prevMessage = list[list.size - 1]
                             stateMachine.append(
-                                JSONObject(
-                                    String(
-                                        prevMessage.payload().get().asIndexation().data()
-                                    )
-                                ).optJSONObject("transaction")
+                                JSONObject(StringUtils.bytesToString(prevMessage.payload()?.asIndexation()?.data() ?: ByteArray(0),
+                                    StringUtils.CODEC.UTF_8)).
+                                optJSONObject("transaction") ?: JSONObject()
                             )
                             prevMessageId = prevMessage.id().toString()
                         }
@@ -147,7 +148,7 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
                     }
                 }
                 Pair(stateMachine, prevMessageId)
-            } catch (e: java.lang.Exception) {
+            } catch (e: Exception) {
                 Pair(stateMachine, prevMessageId)
             }
         }
@@ -161,7 +162,7 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
 
         private fun pushTransactionToIota(
             tx: NWiseTx?,
-            tag: String?
+            tag: String
         ): Pair<Boolean, NWiseStateMachine> {
             val (first, second) = processTransactions(tag)
             val o: JSONObject = JSONObject().put("transaction", tx).put(
@@ -175,9 +176,9 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
                     return Pair(false, first)
                 }
                 IotaUtils.node().message().withIndexString(tag)
-                    .withData(o.toString().getBytes(StandardCharsets.UTF_8)).finish()
+                    .withData(StringUtils.stringToBytes(o.toString(),StringUtils.CODEC.UTF_8)).finish()
                 first.append(tx)
-            } catch (ex: java.lang.Exception) {
+            } catch (ex: Exception) {
                 return Pair(false, first)
             }
             return Pair(true, first)

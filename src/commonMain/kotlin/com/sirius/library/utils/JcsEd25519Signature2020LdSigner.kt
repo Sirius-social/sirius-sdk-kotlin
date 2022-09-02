@@ -21,11 +21,11 @@ class JcsEd25519Signature2020LdSigner {
         proof.put("signatureValue", encode(signature!!))
     }
 
-    fun sign(jsonDoc: JSONObject, privateKey: ByteArray?) {
+    fun sign(jsonDoc: JSONObject, privateKey: ByteArray) {
         val digest = prepare(jsonDoc)
-        val s: LazySodiumJava = LibSodium.getInstance().getLazySodium()
-        val signature = ByteArray(Sign.BYTES)
-        s.cryptoSignDetached(signature, digest, digest.size, privateKey)
+        val s = LibSodium.getInstance()
+      //  val signature = ByteArray(Sign.BYTES)
+        val signature =  s.cryptoSignDetached(digest, privateKey)
         proof.put("signatureValue", encode(signature))
     }
 
@@ -36,10 +36,10 @@ class JcsEd25519Signature2020LdSigner {
             val jc = JsonCanonicalizer(jsonDoc.toString())
             val canonicalized: String = jc.getEncodedString()
             MessageDigest.getInstance("SHA-256").digest(canonicalized.toByteArray())
-        } catch (e: IOException) {
-            throw java.lang.RuntimeException(e)
+        } catch (e: Exception) {
+            throw RuntimeException(e)
         } catch (e: NoSuchAlgorithmException) {
-            throw java.lang.RuntimeException(e)
+            throw RuntimeException(e)
         }
     }
 }

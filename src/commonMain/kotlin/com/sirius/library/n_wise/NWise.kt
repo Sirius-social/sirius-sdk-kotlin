@@ -100,7 +100,7 @@ abstract class NWise {
     fun send(message: Message, context: Context<*>): Boolean {
         val participants: List<NWiseParticipant> = participants
         for (participant in participants) {
-            if (java.util.Arrays.equals(participant.verkey, myVerkey)) break
+            if (participant.verkey.contentEquals(myVerkey)) break
             val theirEndpoint = TheirEndpoint(
                 participant.endpoint,
                 Base58.encode(participant.verkey),

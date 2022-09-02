@@ -25,8 +25,7 @@ open class NWiseTx : JSONObject {
         get() {
             val s: LibSodium = LibSodium.getInstance()
             val inputBytes: ByteArray = StringUtils.stringToBytes(toString(),StringUtils.CODEC.UTF_8)
-            val outputBytes = ByteArray(SHA256_BYTES)
-            s.cryptoHashSha256(outputBytes, inputBytes, inputBytes.size)
+            val outputBytes =   s.cryptoHashSha256(inputBytes)
             return outputBytes
         }
 
@@ -36,7 +35,7 @@ open class NWiseTx : JSONObject {
         signer.sign(this, verkey, crypto!!)
     }
 
-    fun sign(id: String?, privateKey: ByteArray?) {
+    fun sign(id: String?, privateKey: ByteArray) {
         if (has("proof")) remove("proof")
         val signer = JcsEd25519Signature2020LdSigner()
         signer.setVerificationMethod(URI.create(id))

@@ -32,7 +32,7 @@ class IotaPublicDidDoc : PublicDidDoc {
         previousMessageId = msg.id().toString()
         tag = payload.optString("id")!!.substring("did:iota:".length)
         val verificationMethod: JSONObject? = getVerificationMethod(obj)
-        publicKey = Multibase.decode(verificationMethod.optString("publicKeyMultibase"))
+        publicKey = Multibase.decode(verificationMethod?.optString("publicKeyMultibase"))
     }
 
     val didDoc: JSONObject
@@ -62,15 +62,21 @@ class IotaPublicDidDoc : PublicDidDoc {
                 .put("type", "Ed25519VerificationKey2018")
                 .put("publicKeyMultibase", Multibase.encode(Multibase.Base.Base58BTC, publicKey))
         )
-        val dateFormat: DateFormat = SimpleDateFormat("yyyy-mm-dd'T'hh:mm:ss'Z'")
+      //  Date.paresDate()
+       // DAteTime
+
+      //  val secondApiFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+     //   val dateFormat: DateFormat = SimpleDateFormat("yyyy-mm-dd'T'hh:mm:ss'Z'")
+       val dateString =  Date().formatTo("yyyy-MM-dd'T'HH:mm:ss'Z'")
         payload.put("capabilityInvocation", capabilityInvocation)
         if (previousMessageId.isEmpty()) {
-            meta.put("created", dateFormat.format(Date()))
+            meta.put("created", dateString)
         } else {
             meta.put("previousMessageId", previousMessageId)
         }
-        meta.put("updated", dateFormat.format(Date()))
+        meta.put("updated", dateString)
         val signer = JcsEd25519Signature2020LdSigner()
+
         signer.setVerificationMethod(URI.create(payload.optString("id") + "#sign-0"))
         val resMsg = JSONObject().put("doc", payload).put("meta", meta)
         signer.sign(resMsg, publicKey, crypto)
@@ -107,6 +113,9 @@ class IotaPublicDidDoc : PublicDidDoc {
                     if (map.containsKey(prevMessageId)) {
                         val finalPrevMessage: Message? = prevMessage
                         val list: List<Message> = map[prevMessageId]?.filter { m ->
+                            if (finalPrevMessage == null ){
+                                return@filter false
+                            }
                             checkMessage(
                                 m,
                                 finalPrevMessage

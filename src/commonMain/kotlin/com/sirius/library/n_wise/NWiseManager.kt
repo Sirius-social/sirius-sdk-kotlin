@@ -107,7 +107,7 @@ class NWiseManager(context: Context<*>) {
     fun getMe(internalId: String?, context: Context<*>): NWiseParticipant? {
         if (!nWiseMap!!.containsKey(internalId)) return null
         val nWise = nWiseMap!![internalId]
-        return nWise!!.resolveParticipant(Base58.encode(nWise.myVerkey))
+        return nWise!!.resolveParticipant(Base58.encode(nWise.myVerkey?: ByteArray(0)))
     }
 
     init {

@@ -21,9 +21,9 @@ class JcsEd25519Signature2020LdVerifier(var publicKey: ByteArray) {
             val digest: ByteArray =
                 MessageDigest.getInstance("SHA-256").digest(canonicalized.toByteArray())
             val s: LibSodium = LibSodium.getInstance()
-            s.cryptoSignVerifyDetached(signature, digest, digest.size, publicKey)
-        } catch (e: IOException) {
-            throw java.lang.RuntimeException(e)
+            s.cryptoSignVerifyDetached(signature, digest, publicKey)
+        } catch (e: Exception) {
+            throw RuntimeException(e)
         } catch (e: NoSuchAlgorithmException) {
             throw java.lang.RuntimeException(e)
         }
