@@ -25,7 +25,7 @@ class IotaPublicDidDoc : PublicDidDoc {
     }
 
     private constructor(msg: Message) {
-        val string = StringUtils.bytesToString(msg.payload().asIndexation().data(), StringUtils.CODEC.UTF_8)
+        val string = StringUtils.bytesToString(msg.payload()?.asIndexation()?.data() ?: ByteArray(0), StringUtils.CODEC.UTF_8)
         val obj = JSONObject(string)
         payload = obj.optJSONObject("doc") ?: JSONObject()
         meta = obj.optJSONObject("meta") ?: JSONObject()

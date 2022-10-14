@@ -38,13 +38,12 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
          onScenarioEnd(id,false, cause)
      }*/
 
-    override fun start(event: Event): Pair<Boolean, String?> {
+    override suspend fun start(event: Event): Pair<Boolean, String?> {
         try {
-            //TODO явно не label он может меняться
+            //FixMe label not good idea here
             val masterSecretId: String =
-                HashUtils.generateHash(SiriusSDK.getInstance().label?:"")
-            SiriusSDK.getInstance().context.anonCreds
-                .proverCreateMasterSecret(masterSecretId)
+                HashUtils.generateHash(SiriusSDK.label?:"")
+            SiriusSDK.context?.anonCreds?.proverCreateMasterSecret(masterSecretId)
         } catch (ignored: DuplicateMasterSecretNameException) {
         }
         val pair = EventTransform.eventToPair(event)
@@ -66,17 +65,18 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         }
     }
 
-    fun accept(id: String, comment: String?, eventActionListener: EventActionListener?) {
+    suspend fun accept(id: String, comment: String?, eventActionListener: EventActionListener?) {
         eventActionListener?.onActionStart(EventAction.accept, id, comment)
+
         val locale: String = "en"
         val event = eventStorage.getEvent(id)
-        val pairwise  : Pairwise?= PairwiseHelper.getInstance().getPairwise(event?.first)
-        //TODO явно не label он может меняться
+        val pairwise  : Pairwise?= PairwiseHelper.getPairwise(event?.first)
+        //FixMe Label not good idea here
         val masterSecretId: String =
-            HashUtils.generateHash(SiriusSDK.getInstance().label?:"")
+            HashUtils.generateHash(SiriusSDK.label?:"")
         println("holder masterSecretId="+masterSecretId)
         if(pairwise!=null){
-            holderMachine = Holder(SiriusSDK.getInstance().context, pairwise, masterSecretId)
+            holderMachine = SiriusSDK.context?.let { Holder(it, pairwise, masterSecretId) }
         }
         val offer = event?.second as? OfferCredentialMessage
         var error: String? = null

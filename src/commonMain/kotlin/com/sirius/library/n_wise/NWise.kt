@@ -33,7 +33,7 @@ abstract class NWise {
     val chatName: String?
         get() = stateMachine?.label
 
-    fun createInvitation(context: Context<*>): Invitation? {
+    suspend fun createInvitation(context: Context<*>): Invitation? {
         val s = LibSodium.getInstance()
         try {
 
@@ -73,11 +73,11 @@ abstract class NWise {
             return res
         }
 
-    fun leave(context: Context<*>): Boolean {
+    suspend fun leave(context: Context<*>): Boolean {
         return removeParticipant(myDid, context)
     }
 
-    fun removeParticipant(did: String?, context: Context<*>): Boolean {
+    suspend fun removeParticipant(did: String?, context: Context<*>): Boolean {
         val tx = RemoveParticipantTx()
         tx.did = did
         tx.sign(context.crypto, myDid?:"", myVerkey)
@@ -97,7 +97,7 @@ abstract class NWise {
         return stateMachine?.resolveParticipant(Base58.decode(verkeyBase58))
     }
 
-    fun send(message: Message, context: Context<*>): Boolean {
+    suspend fun send(message: Message, context: Context<*>): Boolean {
         val participants: List<NWiseParticipant> = participants
         for (participant in participants) {
             if (participant.verkey.contentEquals(myVerkey)) break
@@ -119,7 +119,7 @@ abstract class NWise {
         return true
     }
 
-    fun notify(context: Context<*>): Boolean {
+    suspend fun notify(context: Context<*>): Boolean {
         return send(LedgerUpdateNotify.builder().build(), context)
     }
 

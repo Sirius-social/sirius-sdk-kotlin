@@ -18,7 +18,7 @@ abstract class QuestionAnswerScenario(val eventStorage : EventStorageAbstract) :
     }
 
 
-    override fun start(event: Event): Pair<Boolean, String?> {
+    override suspend fun start(event: Event): Pair<Boolean, String?> {
         val id = event.message()?.getId()
         if (event.message() is QuestionMessage) {
             val eventPair = EventTransform.eventToPair(event)
@@ -51,17 +51,19 @@ abstract class QuestionAnswerScenario(val eventStorage : EventStorageAbstract) :
     }
 
 
-    fun accept(id: String, comment: String?,actionListener: EventActionListener?) {
+    suspend fun accept(id: String, comment: String?, actionListener: EventActionListener?) {
         val event = eventStorage.getEvent(id)
         val questionMessage = event?.second as? QuestionMessage
-        val pairwise = PairwiseHelper.getInstance().getPairwise(event?.first)
+        val pairwise = PairwiseHelper.getPairwise(event?.first)
         if(questionMessage!=null && pairwise!=null){
-            Recipes.makeAnswer(
-                SiriusSDK.getInstance().context,
-                comment,
-                questionMessage,
-                pairwise
-            )
+            SiriusSDK.context?.let {
+                Recipes.makeAnswer(
+                    it,
+                    comment,
+                    questionMessage,
+                    pairwise
+                )
+            }
         }
     }
 
