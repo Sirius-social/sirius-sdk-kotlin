@@ -1,7 +1,7 @@
 package com.sirius.library.agent.aries_rfc.feature_0036_issue_credential.messages
 
 import com.sirius.library.messaging.Message
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 import kotlin.reflect.KClass

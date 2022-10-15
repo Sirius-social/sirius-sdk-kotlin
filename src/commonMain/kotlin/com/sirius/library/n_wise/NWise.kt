@@ -12,7 +12,7 @@ import com.sirius.library.n_wise.messages.LedgerUpdateNotify
 import com.sirius.library.n_wise.transactions.InvitationTx
 import com.sirius.library.n_wise.transactions.NWiseTx
 import com.sirius.library.n_wise.transactions.RemoveParticipantTx
-import com.sirius.library.utils.Base58
+import com.sirius.library.utils.multibase.Base58
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.KeyPair
 import com.sirius.library.utils.Logger

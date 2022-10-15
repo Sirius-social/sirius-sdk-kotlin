@@ -1,7 +1,7 @@
 package com.sirius.library.agent.aries_rfc
 
 import com.sirius.library.agent.wallet.abstract_wallet.AbstractCrypto
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.Date
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.StringCodec

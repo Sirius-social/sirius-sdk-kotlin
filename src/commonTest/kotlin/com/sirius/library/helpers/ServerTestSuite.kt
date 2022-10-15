@@ -9,11 +9,7 @@ import com.sirius.library.hub.Context
 import com.sirius.library.models.AgentParams
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.StringUtils
-import com.sirius.library.utils.System
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import com.sirius.library.utils.SystemUtils
 import kotlinx.coroutines.*
 import kotlin.time.ExperimentalTime
 
@@ -152,7 +148,7 @@ class ServerTestSuite {
         serverAddress = ConfTest.singletonInstance.test_suite_baseurl ?:""
         url = "$serverAddress/test_suite"
         metadata = null
-        testSuitePath = System.getenv("TEST_SUITE")
+        testSuitePath = SystemUtils.getenv("TEST_SUITE")
         if (testSuitePath == null) {
             testSuiteExistsLocally = false
         } else {

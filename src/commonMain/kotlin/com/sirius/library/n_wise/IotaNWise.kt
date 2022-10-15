@@ -7,8 +7,8 @@ import com.sirius.library.n_wise.messages.IotaResponseAttach
 import com.sirius.library.n_wise.transactions.AddParticipantTx
 import com.sirius.library.n_wise.transactions.GenesisTx
 import com.sirius.library.n_wise.transactions.NWiseTx
-import com.sirius.library.utils.Base58.decode
-import com.sirius.library.utils.Base58.encode
+import com.sirius.library.utils.multibase.Base58.decode
+import com.sirius.library.utils.multibase.Base58.encode
 import com.sirius.library.utils.IotaUtils
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.StringUtils
@@ -68,7 +68,7 @@ class IotaNWise(stateMachine: NWiseStateMachine?, myVerkey: ByteArray) :
             }
         }
 
-        fun acceptInvitation(
+        suspend fun acceptInvitation(
             invitation: Invitation,
             nickname: String?,
             context: Context<*>

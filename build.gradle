@@ -117,6 +117,7 @@ kotlin {
                 implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.3.0'
                 implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3'
                 implementation 'io.ktor:ktor-client-core:1.6.4'
+                implementation 'com.ionspin.kotlin:bignum:0.3.7'
              //   testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
                // implementation 'com.github.hadilq:log4k-metadata:2.3.1'
                // implementation 'com.benasher44:uuid:0.3.1'

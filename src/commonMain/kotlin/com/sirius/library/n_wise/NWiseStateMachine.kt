@@ -1,7 +1,7 @@
 package com.sirius.library.n_wise
 
 import com.sirius.library.n_wise.transactions.*
-import com.sirius.library.utils.Base58.decode
+import com.sirius.library.utils.multibase.Base58.decode
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.JcsEd25519Signature2020LdVerifier
 
@@ -17,9 +17,7 @@ class NWiseStateMachine {
     var participants: MutableList<NWiseParticipant> = ArrayList()
     var currentOwner: NWiseParticipant? = null
 
-    fun getParticipants(): List<NWiseParticipant> {
-        return participants
-    }
+ 
 
     fun check(jsonObject: JSONObject): Boolean {
         val type: String = jsonObject.optString("type") ?:""

@@ -1,5 +1,7 @@
 package com.sirius.library.utils
 
+import com.sirius.library.utils.multibase.Base58
+
 object StringUtils {
 
     enum class CODEC{

@@ -4,7 +4,7 @@ package com.sirius.library.mobile.helpers
 import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.messages.Invitation
 import com.sirius.library.messaging.Message
 import com.sirius.library.messaging.MessageUtil
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.StringUtils
 
 

@@ -1,8 +1,8 @@
 package com.sirius.library.n_wise.messages
 
 import com.sirius.library.messaging.Message
-import com.sirius.library.utils.Base58.decode
-import com.sirius.library.utils.Base58.encode
+import com.sirius.library.utils.multibase.Base58.decode
+import com.sirius.library.utils.multibase.Base58.encode
 import com.sirius.library.utils.JSONObject
 import kotlin.reflect.KClass
 

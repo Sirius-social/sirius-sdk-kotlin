@@ -11,7 +11,7 @@ import com.sirius.library.errors.sirius_exceptions.SiriusValidationError
 import com.sirius.library.hub.Context
 import com.sirius.library.hub.coprotocols.CoProtocolP2P
 import com.sirius.library.messaging.Type
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.Logger
 

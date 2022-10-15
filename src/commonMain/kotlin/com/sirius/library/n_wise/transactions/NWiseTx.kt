@@ -1,7 +1,7 @@
 package com.sirius.library.n_wise.transactions
 
 import com.sirius.library.agent.wallet.abstract_wallet.AbstractCrypto
-import com.sirius.library.utils.Base58.decode
+import com.sirius.library.utils.multibase.Base58.decode
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.JcsEd25519Signature2020LdSigner
 import com.sirius.library.utils.StringUtils
@@ -31,14 +31,14 @@ open class NWiseTx : JSONObject {
 
     fun sign(crypto: AbstractCrypto?, did: String, verkey: ByteArray?) {
         val signer = JcsEd25519Signature2020LdSigner()
-        signer.setVerificationMethod(URI.create("$did#1"))
+        signer.setVerificationMethod("$did#1")
         signer.sign(this, verkey, crypto!!)
     }
 
     fun sign(id: String?, privateKey: ByteArray) {
         if (has("proof")) remove("proof")
         val signer = JcsEd25519Signature2020LdSigner()
-        signer.setVerificationMethod(URI.create(id))
+        signer.setVerificationMethod(id?:"")
         signer.sign(this, privateKey)
     }
 }

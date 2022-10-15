@@ -2,7 +2,7 @@ package com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.mess
 
 import com.sirius.library.errors.sirius_exceptions.SiriusValidationError
 import com.sirius.library.messaging.Message
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.StringCodec

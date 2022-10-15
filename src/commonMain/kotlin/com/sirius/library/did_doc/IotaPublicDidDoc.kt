@@ -3,9 +3,10 @@ package com.sirius.library.did_doc
 import com.sirius.library.agent.wallet.abstract_wallet.AbstractCrypto
 import com.sirius.library.hub.Context
 import com.sirius.library.utils.*
-import com.sirius.library.utils.Base58.decode
-import com.sirius.library.utils.Base58.encode
+import com.sirius.library.utils.multibase.Base58.decode
+import com.sirius.library.utils.multibase.Base58.encode
 import com.sirius.library.utils.IotaUtils.node
+import com.sirius.library.utils.multibase.Multibase
 import org.iota.client.Client
 import org.iota.client.Message
 import org.iota.client.MessageId
@@ -22,6 +23,7 @@ class IotaPublicDidDoc : PublicDidDoc {
         publicKey = decode(crypto.createKey()!!)
         tag = IotaUtils.generateTag(publicKey)
         payload.put("id", "did:iota:$tag")
+
     }
 
     private constructor(msg: Message) {
@@ -32,7 +34,7 @@ class IotaPublicDidDoc : PublicDidDoc {
         previousMessageId = msg.id().toString()
         tag = payload.optString("id")!!.substring("did:iota:".length)
         val verificationMethod: JSONObject? = getVerificationMethod(obj)
-        publicKey = Multibase.decode(verificationMethod?.optString("publicKeyMultibase"))
+        publicKey = Multibase.decode(verificationMethod?.optString("publicKeyMultibase")?:"")
     }
 
     val didDoc: JSONObject
@@ -60,7 +62,7 @@ class IotaPublicDidDoc : PublicDidDoc {
                 .put("id", payload.optString("id") + "#sign-0")
                 .put("controller", payload.optString("id"))
                 .put("type", "Ed25519VerificationKey2018")
-                .put("publicKeyMultibase", Multibase.encode(Multibase.Base.Base58BTC, publicKey))
+                .put("publicKeyMultibase", Multibase.encode(Multibase.Base.BASE58_BTC, publicKey))
         )
       //  Date.paresDate()
        // DAteTime
@@ -77,7 +79,7 @@ class IotaPublicDidDoc : PublicDidDoc {
         meta.put("updated", dateString)
         val signer = JcsEd25519Signature2020LdSigner()
 
-        signer.setVerificationMethod(URI.create(payload.optString("id") + "#sign-0"))
+        signer.setVerificationMethod(payload.optString("id") + "#sign-0")
         val resMsg = JSONObject().put("doc", payload).put("meta", meta)
         signer.sign(resMsg, publicKey, crypto)
         return resMsg
@@ -170,7 +172,7 @@ class IotaPublicDidDoc : PublicDidDoc {
         private fun checkFirstMessageTag(jsonMsg: JSONObject): Boolean {
             val verificationMethod: JSONObject = getVerificationMethod(jsonMsg)
                 ?: return false
-            val pubKeyMultibase: String? = verificationMethod.optString("publicKeyMultibase")
+            val pubKeyMultibase: String = verificationMethod.optString("publicKeyMultibase") ?:""
             val tag = tagFromId(jsonMsg.optJSONObject("doc")?.optString("id")?:"")
             return tag == IotaUtils.generateTag(Multibase.decode(pubKeyMultibase))
         }
@@ -192,7 +194,7 @@ class IotaPublicDidDoc : PublicDidDoc {
             val verificationMethod =
                 getVerificationMethod(prevIntegrationMsgJson, verificationMethodId)
                     ?: return false
-            val pubKeyMultibase = verificationMethod.optString("publicKeyMultibase")
+            val pubKeyMultibase = verificationMethod.optString("publicKeyMultibase") ?:""
             val verifier = JcsEd25519Signature2020LdVerifier(Multibase.decode(pubKeyMultibase))
             return verifier.verify(integrationMsgJson)
         }

@@ -5,6 +5,8 @@ import com.ionspin.kotlin.crypto.signature.Signature
 import com.ionspin.kotlin.crypto.signature.crypto_sign_BYTES
 import com.sirius.library.errors.sirius_exceptions.SiriusCryptoError
 import com.sirius.library.utils.*
+import com.sirius.library.utils.multibase.Base58
+import com.sirius.library.utils.multibase.Base64
 import com.sodium.LibSodium
 import com.sodium.SodiumException
 

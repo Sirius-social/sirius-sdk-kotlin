@@ -3,6 +3,7 @@ package com.sirius.library.agent.aries_rfc.feature_0037_present_proof.messages
 import com.sirius.library.agent.aries_rfc.feature_0036_issue_credential.messages.AttribTranslation
 import com.sirius.library.messaging.Message
 import com.sirius.library.utils.*
+import com.sirius.library.utils.multibase.Base64
 import kotlin.reflect.KClass
 
 class RequestPresentationMessage(msg: String) : BasePresentProofMessage(msg) {

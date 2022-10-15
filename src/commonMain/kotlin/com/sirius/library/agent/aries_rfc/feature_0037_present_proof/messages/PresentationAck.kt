@@ -4,7 +4,7 @@ import com.sirius.library.agent.aries_rfc.feature_0015_ack.Ack
 import com.sirius.library.agent.aries_rfc.feature_0036_issue_credential.messages.BaseIssueCredentialMessage
 import com.sirius.library.agent.aries_rfc.feature_0036_issue_credential.messages.IssueCredentialMessage
 import com.sirius.library.messaging.Message
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 import kotlin.reflect.KClass

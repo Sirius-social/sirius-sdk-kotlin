@@ -1,7 +1,5 @@
 package org.iota.client.local
 
-import com.sirius.library.utils.System
-
 /**
  * The NativeAPI class, which houses all entrypoints to the shared library.
  */
@@ -31,7 +29,7 @@ object NativeAPI {
     init {
         var error: Throwable? = null
         try {
-           System.loadLibrary("iota_client")
+        //   System.loadLibrary("iota_client")
         } catch (t: Throwable) {
             error = t
         }

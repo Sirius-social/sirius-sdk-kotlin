@@ -4,7 +4,7 @@ package com.sirius.library.n_wise
 import com.sirius.library.agent.aries_rfc.feature_0095_basic_message.Message
 import com.sirius.library.hub.Context;
 import com.sirius.library.n_wise.messages.Invitation
-import com.sirius.library.utils.Base58
+import com.sirius.library.utils.multibase.Base58
 
 class NWiseManager(context: Context<*>) {
     private var nWiseMap: MutableMap<String?, NWise>? = null
@@ -66,13 +66,13 @@ class NWiseManager(context: Context<*>) {
         return nWise?.fetchFromLedger() ?: false
     }
 
-    fun createInvitation(internalId: String?): Invitation? {
+    suspend fun createInvitation(internalId: String?): Invitation? {
         if (!nWiseMap!!.containsKey(internalId)) return null
         val nWise = nWiseMap!![internalId]
         return nWise!!.createInvitation(context)
     }
 
-    fun acceptInvitation(invitation: Invitation, nickname: String?): String? {
+    suspend fun acceptInvitation(invitation: Invitation, nickname: String?): String? {
         if (invitation.ledgerType.equals("iota@v1.0")) {
             val nWise: NWise? = IotaNWise.acceptInvitation(invitation, nickname, context)
             if (nWise != null) {
@@ -82,14 +82,14 @@ class NWiseManager(context: Context<*>) {
         return null
     }
 
-    fun send(internalId: String?, msg: Message): Boolean {
+    suspend fun send(internalId: String?, msg: Message): Boolean {
         return if (!nWiseMap!!.containsKey(internalId)) false else nWiseMap!![internalId]!!.send(
             msg,
             context
         )
     }
 
-    fun leave(internalId: String?, context: Context<*>): Boolean {
+    suspend fun leave(internalId: String?, context: Context<*>): Boolean {
         if (!nWiseMap!!.containsKey(internalId)) return false
         val res = nWiseMap!![internalId]!!.leave(context)
         if (res) {

@@ -1,7 +1,7 @@
 package com.sirius.library.n_wise.transactions
 
-import com.sirius.library.utils.Base58.decode
-import com.sirius.library.utils.Base58.encode
+import com.sirius.library.utils.multibase.Base58.decode
+import com.sirius.library.utils.multibase.Base58.encode
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 

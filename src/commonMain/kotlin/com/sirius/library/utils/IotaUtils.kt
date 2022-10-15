@@ -1,6 +1,6 @@
 package com.sirius.library.utils
 
-import com.sirius.library.utils.Base58.encode
+import com.sirius.library.utils.multibase.Base58.encode
 import com.sodium.LibSodium
 
 
@@ -34,10 +34,6 @@ object IotaUtils {
     }
 
     init {
-        try {
-            NativeLoader.loadLibrary("iota_client")
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        NativeLoader.loadNative("iota_client")
     }
 }

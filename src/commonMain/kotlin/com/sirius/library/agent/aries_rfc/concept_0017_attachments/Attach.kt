@@ -1,6 +1,6 @@
 package com.sirius.library.agent.aries_rfc.concept_0017_attachments
 
-import com.sirius.library.utils.Base64
+import com.sirius.library.utils.multibase.Base64
 import com.sirius.library.utils.JSONObject
 import kotlinx.serialization.json.JsonObject
 

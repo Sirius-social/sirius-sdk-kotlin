@@ -1,18 +1,20 @@
 package com.sirius.library.utils
 
+import com.ionspin.kotlin.crypto.LibsodiumInitializer
 import com.sirius.library.agent.wallet.abstract_wallet.AbstractCrypto
-import com.sirius.library.utils.Base58.encode
+import com.sirius.library.utils.json_canonical.JsonCanonicalizer
+import com.sirius.library.utils.multibase.Base58.encode
 import com.sodium.LibSodium
 
 
 class JcsEd25519Signature2020LdSigner {
     var proof = JSONObject().put("type", "JcsEd25519Signature2020")
-    fun setVerificationMethod(verificationMethod: URI) {
-        proof.put("verificationMethod", verificationMethod.toString())
+    fun setVerificationMethod(verificationMethod: String) {
+        proof.put("verificationMethod", verificationMethod)
     }
 
-    fun setCreator(creator: URI) {
-        proof.put("creator", creator.toString())
+    fun setCreator(creator: String) {
+        proof.put("creator", creator)
     }
 
     fun sign(jsonDoc: JSONObject, publicKey: ByteArray?, crypto: AbstractCrypto) {
@@ -34,11 +36,10 @@ class JcsEd25519Signature2020LdSigner {
         jsonDoc.put("proof", proof)
         return try {
             val jc = JsonCanonicalizer(jsonDoc.toString())
-            val canonicalized: String = jc.getEncodedString()
-            MessageDigest.getInstance("SHA-256").digest(canonicalized.toByteArray())
+            val canonicalized: String = jc.encodedString
+            LibSodium.getInstance().cryptoHashSha256(StringUtils.stringToBytes(canonicalized, StringUtils.CODEC.UTF_8))
+           // MessageDigest.getInstance("SHA-256").digest(StringUtils.stringToBytes(canonicalized, StringUtils.CODEC.UTF_8))
         } catch (e: Exception) {
-            throw RuntimeException(e)
-        } catch (e: NoSuchAlgorithmException) {
             throw RuntimeException(e)
         }
     }

@@ -8,7 +8,7 @@ import com.sirius.library.errors.sirius_exceptions.SiriusContextError
 import com.sirius.library.errors.sirius_exceptions.SiriusValidationError
 import com.sirius.library.messaging.Message
 import com.sirius.library.mobile.utils.HashUtils
-import com.sirius.library.utils.Base58
+import com.sirius.library.utils.multibase.Base58
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 
