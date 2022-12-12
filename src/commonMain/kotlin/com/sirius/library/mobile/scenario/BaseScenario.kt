@@ -27,9 +27,9 @@ public abstract class BaseScenario() : ScenarioListener {
         }
         if(list.isNotEmpty()){
             id =  event.message()!!.getId() ?: id
-            onScenarioStart(id)
+            onScenarioStart(id,event)
             val pair = start(event)
-            onScenarioEnd(id,pair.first, pair.second)
+            onScenarioEnd(id,event,pair.first, pair.second)
         }
     }
 

@@ -13,7 +13,13 @@ abstract class ConnProtocolMessage(msg: String) : AriesProtocolMessage(msg) {
         var verkey: String? = null
         var endpoint: String? = null
         var routingKeys: List<String>? = null
+
+        override fun toString(): String {
+            return "did=$did verkey=$verkey"
+        }
     }
+
+
 
     @Throws(SiriusInvalidMessage::class)
     fun extractTheirInfo(): ExtractTheirInfoRes {

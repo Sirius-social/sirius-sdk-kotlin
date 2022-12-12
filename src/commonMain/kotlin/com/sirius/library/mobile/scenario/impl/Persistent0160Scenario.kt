@@ -101,13 +101,13 @@ abstract class Persistent0160Scenario(val eventStorage: EventStorageAbstract) : 
                 pairwise?.let {
                     SiriusSDK.context?.pairwiseList?.ensureExists(it)
                 }
-                event?.let {
+              /*  event?.let {
                     eventStorage.eventStore(
                         message?.getId() ?: "",
                         Pair(pairwise?.their?.did, message),
                         pairwise != null
                     )
-                }
+                }*/
                 return Pair(true, pairwise.toJSONObject().toString())
             }
             return Pair(false, null)
