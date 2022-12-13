@@ -35,7 +35,11 @@ abstract class InviteeScenario(val eventStorage: EventStorageAbstract) : BaseSce
         val event = eventStorage.getEvent(id)
         //TODO send problem report
         event?.let {
-            eventStorage.eventStore(id, event, false)
+            val params = mutableMapOf<String,Any?>()
+            params["isAccepted"] =  false
+            params["isCanceled"] =  true
+            params["canceledCause"] =  cause
+            eventStorage.eventStore(id, event, params)
         }
         actionListener?.onActionEnd(EventAction.cancel, id, null, false, cause)
     }
@@ -70,11 +74,17 @@ abstract class InviteeScenario(val eventStorage: EventStorageAbstract) : BaseSce
                     error = problemReport.explain
                 }
             }
+
+            val params = mutableMapOf<String,Any?>()
+            params["isAccepted"] = pairwise != null
+            params["acceptedComment"] = comment
+            params["isCanceled"] = error != null
+            params["canceledCause"] = error
             event?.let {
                 eventStorage.eventStore(
                     invitation?.getId() ?: "",
                     Pair(pairwise?.their?.did, event.second),
-                    pairwise != null
+                    params
                 )
             }
         }else{
@@ -88,7 +98,7 @@ abstract class InviteeScenario(val eventStorage: EventStorageAbstract) : BaseSce
     override suspend fun start(event: Event): Pair<Boolean, String?> {
         val eventPair = EventTransform.eventToPair(event)
         val id = eventPair.second?.getId()
-        eventStorage.eventStore(id?:"", eventPair, false)
+        eventStorage.eventStore(id?:"", eventPair, null)
         return Pair(true, null)
     }
 

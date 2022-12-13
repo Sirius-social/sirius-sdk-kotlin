@@ -22,13 +22,15 @@ abstract class QuestionAnswerScenario(val eventStorage : EventStorageAbstract) :
         val id = event.message()?.getId()
         if (event.message() is QuestionMessage) {
             val eventPair = EventTransform.eventToPair(event)
-            eventStorage.eventStore(id?:"", eventPair, false)
+            eventStorage.eventStore(id?:"", eventPair, null)
         } else {
             val answerMessage = event.message() as AnswerMessage
             val idQuestion = answerMessage.getThreadId()
             val questionEvent = eventStorage.getEvent(idQuestion?:"")
             questionEvent?.let {
-                eventStorage.eventStore(id?:"", questionEvent, true)
+                val params = mutableMapOf<String,Any?>()
+                params["isAccepted"] =  true
+                eventStorage.eventStore(id?:"", questionEvent, params)
             }
         }
         return Pair(true, null)

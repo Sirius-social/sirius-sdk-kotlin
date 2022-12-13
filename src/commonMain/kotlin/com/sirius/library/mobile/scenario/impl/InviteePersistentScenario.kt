@@ -36,7 +36,7 @@ abstract class InviteePersistentScenario(eventStorage: EventStorageAbstract) :
     override suspend fun start(event: Event): Pair<Boolean, String?> {
         val eventPair = EventTransform.eventToPair(event)
         val id = eventPair.second?.getId()
-        eventStorage.eventStore(id?:"", eventPair, false)
+        eventStorage.eventStore(id?:"", eventPair, null)
         return Pair(true, null)
     }
 

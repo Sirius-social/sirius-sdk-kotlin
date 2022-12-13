@@ -2,6 +2,8 @@ package com.sirius.library.agent.aries_rfc.feature_0037_present_proof.state_mach
 
 import com.sirius.library.agent.aries_rfc.SchemasNonSecretStorage
 import com.sirius.library.agent.aries_rfc.feature_0015_ack.Ack
+import com.sirius.library.agent.aries_rfc.feature_0036_issue_credential.messages.IssueProblemReport
+import com.sirius.library.agent.aries_rfc.feature_0036_issue_credential.messages.OfferCredentialMessage
 import com.sirius.library.agent.aries_rfc.feature_0037_present_proof.messages.PresentProofProblemReport
 import com.sirius.library.agent.aries_rfc.feature_0037_present_proof.messages.PresentationMessage
 import com.sirius.library.agent.aries_rfc.feature_0037_present_proof.messages.RequestPresentationMessage
@@ -11,6 +13,7 @@ import com.sirius.library.errors.StateMachineTerminatedWithError
 import com.sirius.library.errors.sirius_exceptions.SiriusValidationError
 import com.sirius.library.hub.Context
 import com.sirius.library.hub.coprotocols.CoProtocolP2P
+import com.sirius.library.messaging.Type
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.Logger
@@ -27,6 +30,15 @@ class Prover(context: Context<*>, var verifier: Pairwise, var masterSecretId: St
         masterSecretId,
         null
     ) {
+    }
+
+    suspend fun cancel (request: RequestPresentationMessage?, problemCode : String?, explain : String?){
+        problemReport = PresentProofProblemReport.builder().setProblemCode(problemCode)
+            .setExplain(explain).build()
+        log.info("100% - Terminated with error. " + problemCode.toString() + " " + explain)
+        CoProtocolP2P(context, verifier, protocols(), timeToLiveSec).also { coprotocol ->
+            coprotocol.send(problemReport!!)
+        }
     }
 
     suspend fun prove(request: RequestPresentationMessage, selfAttestedAttributes :JSONObject = JSONObject()): Boolean {

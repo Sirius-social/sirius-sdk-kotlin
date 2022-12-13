@@ -23,7 +23,7 @@ abstract class ProverScenario(val eventStorage : EventStorageAbstract) : BaseSce
     override suspend fun start(event: Event): Pair<Boolean, String?> {
         val eventPair = EventTransform.eventToPair(event)
         val id = eventPair.second?.getId()
-        eventStorage.eventStore(id!!, eventPair, false)
+        eventStorage.eventStore(id!!, eventPair, null)
         return Pair(true, null)
     }
 
@@ -71,17 +71,31 @@ abstract class ProverScenario(val eventStorage : EventStorageAbstract) : BaseSce
         }
         val text = machine?.problemReport
         event?.let {
-            eventStorage.eventStore(id, event, isProved)
+            val params = mutableMapOf<String,Any?>()
+            params["isAccepted"] =  isProved
+            params["acceptedComment"] =  comment
+            params["isCanceled"] =  text != null
+            params["canceledCause"] =  text?.explain
+            eventStorage.eventStore(id, event, params)
         }
         actionListener?.onActionEnd(EventAction.accept, id, comment, isProved, text?.explain)
     }
 
-    fun cancel(id: String, cause: String?,actionListener: EventActionListener?) {
+    suspend fun cancel(id: String, cause: String?,actionListener: EventActionListener?) {
         actionListener?.onActionStart(EventAction.cancel, id, cause)
         val event = eventStorage.getEvent(id)
-        //TODO send problem report
+        val pairwise = PairwiseHelper.getPairwise(event?.first)
+        if(pairwise!=null){
+            val requestPresentation = event?.second as? RequestPresentationMessage
+           val machine = SiriusSDK.context?.let { Prover(it, pairwise, null,null) }
+            machine?.cancel(requestPresentation,"500",cause)
+        }
         event?.let {
-            eventStorage.eventStore(id, event, false)
+            val params = mutableMapOf<String,Any?>()
+            params["isAccepted"] =  false
+            params["isCanceled"] = true
+            params["canceledCause"] =  cause
+            eventStorage.eventStore(id, event, params)
         }
         actionListener?.onActionEnd(EventAction.accept, id, null, false, cause)
     }

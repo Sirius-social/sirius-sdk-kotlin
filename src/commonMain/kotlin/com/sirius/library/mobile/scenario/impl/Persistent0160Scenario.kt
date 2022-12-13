@@ -51,7 +51,7 @@ abstract class Persistent0160Scenario(val eventStorage: EventStorageAbstract) : 
                     connectionKey,
                     endpoint
                 )
-                connResponse?.getId()?.let { it1 -> eventStorage.eventStore(it1,Pair(connRequest.theirDid(),connResponse),false) }
+                connResponse?.getId()?.let { it1 -> eventStorage.eventStore(it1,Pair(connRequest.theirDid(),connResponse),null) }
             }
         }
         actionListener?.onActionEnd(EventAction.accept, id, comment, true, error)
@@ -62,7 +62,11 @@ abstract class Persistent0160Scenario(val eventStorage: EventStorageAbstract) : 
         val event = eventStorage.getEvent(id)
         //TODO send problem report
         event?.let {
-            eventStorage.eventStore(id, event, false)
+            val params = mutableMapOf<String,Any?>()
+            params["isAccepted"] =  false
+            params["isCanceled"] =  true
+            params["canceledCause"] =  cause
+            eventStorage.eventStore(id, event, params)
         }
         actionListener?.onActionEnd(EventAction.cancel, id, null, false, cause)
     }
@@ -74,7 +78,7 @@ abstract class Persistent0160Scenario(val eventStorage: EventStorageAbstract) : 
 
             val eventPair = EventTransform.eventToPair(event)
             val id = eventPair.second?.getId()
-            eventStorage.eventStore(id ?: "", eventPair, false)
+            eventStorage.eventStore(id ?: "", eventPair, null)
 
             val pairwise = SiriusSDK.context?.let { Persistent0160.receiveResponse(it, message) }
          /*   if (pairwise == null) {
@@ -114,12 +118,12 @@ abstract class Persistent0160Scenario(val eventStorage: EventStorageAbstract) : 
         } else if (message is Invitation) {
             val eventPair = EventTransform.eventToPair(event)
             val id = eventPair.second?.getId()
-            eventStorage.eventStore(id ?: "", eventPair, false)
+            eventStorage.eventStore(id ?: "", eventPair, null)
             return Pair(true, null)
         } else {
             val eventPair = EventTransform.eventToPair(event)
             val id = eventPair.second?.getId()
-            eventStorage.eventStore(id ?: "", eventPair, false)
+            eventStorage.eventStore(id ?: "", eventPair, null)
 
             return Pair(true, null)
         }

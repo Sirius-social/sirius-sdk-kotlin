@@ -48,7 +48,7 @@ abstract class InviterScenario(val eventStorage: EventStorageAbstract) : BaseSce
             SiriusSDK.context?.pairwiseList?.ensureExists(it)
             val theirDid = it.their.did
             val pair =  Pair(theirDid, event.message())
-            eventStorage.eventStore(request.getId() ?:"", pair, false)
+            eventStorage.eventStore(request.getId() ?:"", pair, null)
         }
         return Pair(pairwise!=null,null)
     }

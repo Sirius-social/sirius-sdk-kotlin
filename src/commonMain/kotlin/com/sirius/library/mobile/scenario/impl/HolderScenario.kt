@@ -7,6 +7,7 @@ import com.sirius.library.agent.listener.Event
 import com.sirius.library.agent.pairwise.Pairwise
 import com.sirius.library.errors.indy_exceptions.DuplicateMasterSecretNameException
 import com.sirius.library.messaging.Message
+import com.sirius.library.mobile.EventTags
 import com.sirius.library.mobile.SiriusSDK
 import com.sirius.library.mobile.scenario.*
 import com.sirius.library.mobile.helpers.PairwiseHelper
@@ -17,7 +18,7 @@ import kotlin.reflect.KClass
 abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScenario(),
     EventActionAbstract {
 
-    var holderMachine: Holder? = null
+
 
     override fun initMessages(): List<KClass< out Message>> {
         return listOf(OfferCredentialMessage::class)
@@ -47,7 +48,7 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         } catch (ignored: DuplicateMasterSecretNameException) {
         }
         val pair = EventTransform.eventToPair(event)
-        eventStorage.eventStore(pair.second?.getId()?:"", pair, false)
+        eventStorage.eventStore(pair.second?.getId()?:"", pair, null)
         return Pair(true, "")
     }
 
@@ -75,8 +76,9 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         val masterSecretId: String =
             HashUtils.generateHash(SiriusSDK.label?:"")
         println("holder masterSecretId="+masterSecretId)
-        if(pairwise!=null){
-            holderMachine = SiriusSDK.context?.let { Holder(it, pairwise, masterSecretId) }
+        var  holderMachine : Holder? = null
+            if(pairwise!=null){
+             holderMachine = SiriusSDK.context?.let { Holder(it, pairwise, masterSecretId) }
         }
         val offer = event?.second as? OfferCredentialMessage
         var error: String? = null
@@ -89,8 +91,11 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        val params = mutableMapOf<String,Any?>()
+        params["isAccepted"] = result?.first ?: false
+        params["acceptedComment"] = comment
         event?.let {
-            eventStorage.eventStore(id, event, result?.first ?: false)
+            eventStorage.eventStore(id, event,  params)
         }
         eventActionListener?.onActionEnd(
             EventAction.accept,
@@ -101,12 +106,21 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         )
     }
 
-    fun cancel(id: String, cause: String?, eventActionListener: EventActionListener?) {
+    suspend fun cancel(id: String, cause: String?, eventActionListener: EventActionListener?) {
         eventActionListener?.onActionStart(EventAction.cancel, id, cause)
         val event = eventStorage.getEvent(id)
-        //TODO send problem report
+        val pairwise  : Pairwise?= PairwiseHelper.getPairwise(event?.first)
+        if(pairwise!=null){
+           val holderMachine = SiriusSDK.context?.let { Holder(it, pairwise, null) }
+            val offer = event?.second as? OfferCredentialMessage
+            offer?.let {     holderMachine?.cancel(offer,"500",cause)}
+        }
         event?.let {
-            eventStorage.eventStore(id, event, false)
+            val params = mutableMapOf<String,Any?>()
+            params["isAccepted"] =  false
+            params["isCanceled"] =  true
+            params["canceledCause"] =  cause
+            eventStorage.eventStore(id, event,params)
         }
         eventActionListener?.onActionEnd(EventAction.cancel, id, null, false, cause)
     }

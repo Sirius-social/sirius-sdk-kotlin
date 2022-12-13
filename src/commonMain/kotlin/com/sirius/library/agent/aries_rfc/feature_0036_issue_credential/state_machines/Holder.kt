@@ -91,6 +91,18 @@ class Holder(context: Context<*>, issuer: Pairwise, masterSecretId: String?, loc
         return Pair(false, "")
     }
 
+
+    suspend fun cancel (offer: OfferCredentialMessage, problemCode : String?, explain : String?){
+        val docUri: String = Type.fromStr(offer.getType()?:"").docUri
+        problemReport =
+            IssueProblemReport.builder().setProblemCode(problemCode).setExplain(explain)
+                .setDocUri(docUri).build()
+        log.info("100% - Terminated with error. " + problemCode.toString() + " " + explain)
+        CoProtocolP2P(context, issuer, protocols(), timeToLiveSec).also { coprotocol ->
+            coprotocol.send(problemReport!!)
+        }
+    }
+
     suspend fun accept(offer: OfferCredentialMessage): Pair<Boolean, String> {
         return accept(offer, null)
     }
