@@ -14,6 +14,7 @@ import com.sirius.library.errors.sirius_exceptions.SiriusValidationError
 import com.sirius.library.hub.Context
 import com.sirius.library.hub.coprotocols.CoProtocolP2P
 import com.sirius.library.messaging.Type
+import com.sirius.library.utils.ExceptionHandler
 import com.sirius.library.utils.JSONArray
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.Logger
@@ -92,6 +93,7 @@ class Prover(context: Context<*>, var verifier: Pairwise, var masterSecretId: St
                         )
                     }
                 } catch (ex: StateMachineTerminatedWithError) {
+                    ExceptionHandler.handleException(ex)
                     problemReport = PresentProofProblemReport.builder().setProblemCode(ex.problemCode)
                         .setExplain(ex.explain).build()
                     log.info("100% - Terminated with error. " + ex.problemCode.toString() + " " + ex.explain)
@@ -99,6 +101,7 @@ class Prover(context: Context<*>, var verifier: Pairwise, var masterSecretId: St
                 }
             }
         } catch (e: Exception) {
+            ExceptionHandler.handleException(e)
             e.printStackTrace()
         }
         return false

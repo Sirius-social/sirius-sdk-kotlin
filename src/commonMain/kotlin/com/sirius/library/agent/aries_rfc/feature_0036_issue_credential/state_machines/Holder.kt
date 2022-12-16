@@ -12,6 +12,7 @@ import com.sirius.library.hub.Context
 import com.sirius.library.hub.coprotocols.CoProtocolP2P
 import com.sirius.library.messaging.Type
 import com.sirius.library.utils.Base64
+import com.sirius.library.utils.ExceptionHandler
 import com.sirius.library.utils.JSONObject
 import com.sirius.library.utils.Logger
 
@@ -77,6 +78,7 @@ class Holder(context: Context<*>, issuer: Pairwise, masterSecretId: String?, loc
                     log.info("100% - Credential stored successfully")
                     return Pair(true, credId)
                 } catch (ex: StateMachineTerminatedWithError) {
+                    ExceptionHandler.handleException(ex)
                     problemReport =
                         IssueProblemReport.builder().setProblemCode(ex.problemCode).setExplain(ex.explain)
                             .setDocUri(docUri).build()
@@ -86,6 +88,7 @@ class Holder(context: Context<*>, issuer: Pairwise, masterSecretId: String?, loc
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            ExceptionHandler.handleException(e)
             log.info("100% - Terminated with error")
         }
         return Pair(false, "")

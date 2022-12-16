@@ -85,10 +85,13 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         var result: Pair<Boolean, String?>? =
             Pair(false, error)
         try {
+            println("holder Start=")
             if(offer!=null){
                 result = holderMachine?.accept(offer, comment)
+                println("holder Start result=${result}")
             }
         } catch (e: Exception) {
+            println("holder Start ex=${e.message}")
             e.printStackTrace()
         }
         val params = mutableMapOf<String,Any?>()
@@ -97,6 +100,7 @@ abstract class HolderScenario(val eventStorage: EventStorageAbstract) : BaseScen
         event?.let {
             eventStorage.eventStore(id, event,  params)
         }
+        println("holder Start onActionEnd=${result}")
         eventActionListener?.onActionEnd(
             EventAction.accept,
             id,

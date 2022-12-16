@@ -248,12 +248,16 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
                 one.first.future?.complete(Message(eventMessage))
             }
         } catch (e: java.lang.InterruptedException) {
+            ExceptionHandler.handleException(e)
             e.printStackTrace()
         } catch (e: java.util.concurrent.ExecutionException) {
+            ExceptionHandler.handleException(e)
             e.printStackTrace()
         } catch (e: java.util.concurrent.TimeoutException) {
+            ExceptionHandler.handleException(e)
             e.printStackTrace()
         } catch (e: IndyException) {
+            ExceptionHandler.handleException(e)
             e.printStackTrace()
         }
     }

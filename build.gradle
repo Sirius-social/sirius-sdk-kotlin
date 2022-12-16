@@ -117,6 +117,13 @@ kotlin {
                 implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.3.0'
                 implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3'
                 implementation 'io.ktor:ktor-client-core:1.6.4'
+
+                implementation 'com.badoo.reaktive:reaktive:1.2.2'
+                implementation 'com.badoo.reaktive:reaktive-annotations:1.2.2'
+                implementation 'com.badoo.reaktive:coroutines-interop:1.2.2' // For interop with coroutines
+               // implementation 'com.badoo.reaktive:rxjava2-interop:1.2.2' // For interop with RxJava v2
+              //  implementation 'com.badoo.reaktive:rxjava3-interop:1.2.2' // For interop with RxJava v3
+
              //   testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
                // implementation 'com.github.hadilq:log4k-metadata:2.3.1'
                // implementation 'com.benasher44:uuid:0.3.1'
@@ -154,6 +161,7 @@ kotlin {
 
         iosX64Main{
             dependencies {
+               // implementation "com.github.florent37:multiplatform-livedata-ios:1.0.0"
              //  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core-iosx64:1.5.2'
                 //  implementation 'junit:junit:4.13'
             }

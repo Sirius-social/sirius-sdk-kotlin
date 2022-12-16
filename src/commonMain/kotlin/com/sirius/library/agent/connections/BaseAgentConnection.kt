@@ -5,10 +5,7 @@ import com.sirius.library.encryption.P2PConnection
 import com.sirius.library.errors.sirius_exceptions.SiriusFieldValueError
 import com.sirius.library.messaging.Message
 import com.sirius.library.rpc.AddressedTunnel
-import com.sirius.library.utils.CompletableFutureKotlin
-import com.sirius.library.utils.Logger
-import com.sirius.library.utils.StringCodec
-import com.sirius.library.utils.StringUtils
+import com.sirius.library.utils.*
 
 
 abstract class BaseAgentConnection {
@@ -72,6 +69,7 @@ abstract class BaseAgentConnection {
         try {
               payload = feat?.get(timeout.toLong()) ?:ByteArray(0)
         } catch (e: Exception) {
+            ExceptionHandler.handleException(e)
             e.printStackTrace()
         }
         val msgString = payload.decodeToString()

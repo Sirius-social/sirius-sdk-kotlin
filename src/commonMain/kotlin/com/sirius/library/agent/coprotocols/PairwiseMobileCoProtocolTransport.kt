@@ -6,6 +6,7 @@ import com.sirius.library.agent.listener.Event
 import com.sirius.library.agent.listener.Listener
 import com.sirius.library.agent.pairwise.Pairwise
 import com.sirius.library.messaging.Message
+import com.sirius.library.utils.ExceptionHandler
 
 
 class PairwiseMobileCoProtocolTransport(agent: MobileAgent, pw: Pairwise) :
@@ -20,7 +21,9 @@ class PairwiseMobileCoProtocolTransport(agent: MobileAgent, pw: Pairwise) :
 
     override suspend fun sendAndWait(message: Message): Pair<Boolean, Message?> {
         println("sendAndWait PairwiseMobileCoProtocolTransport =")
-        send(message)
+        if (!send(message)){
+             return Pair(false, null)
+        }
         val r: GetOneResult? = one
         if (r != null) {
             if (r.senderVerkey.equals(pw.their.verkey)) {
@@ -45,6 +48,7 @@ class PairwiseMobileCoProtocolTransport(agent: MobileAgent, pw: Pairwise) :
                 }
 
             } catch (e: Exception) {
+                ExceptionHandler.handleException(e)
                 e.printStackTrace()
             }
             return null

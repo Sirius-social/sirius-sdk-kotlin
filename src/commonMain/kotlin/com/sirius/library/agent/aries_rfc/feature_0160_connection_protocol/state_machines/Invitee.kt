@@ -11,10 +11,7 @@ import com.sirius.library.errors.StateMachineTerminatedWithError
 import com.sirius.library.errors.sirius_exceptions.SiriusValidationError
 import com.sirius.library.hub.Context
 import com.sirius.library.hub.coprotocols.CoProtocolP2PAnon
-import com.sirius.library.utils.JSONArray
-import com.sirius.library.utils.JSONObject
-import com.sirius.library.utils.Logger
-import com.sirius.library.utils.System
+import com.sirius.library.utils.*
 
 class Invitee(context: Context<*>, me: Pairwise.Me, myEndpoint: Endpoint) : BaseConnectionStateMachine(context, me, myEndpoint) {
     var log: Logger = Logger.getLogger(Invitee::class.simpleName)
@@ -146,6 +143,7 @@ class Invitee(context: Context<*>, me: Pairwise.Me, myEndpoint: Endpoint) : Base
                         )
                     }
                 } catch (e: StateMachineTerminatedWithError) {
+                    ExceptionHandler.handleException(e)
                     problemReport =
                         ConnProblemReport.builder().setProblemCode(e.problemCode).setExplain(e.explain)
                             .build()
@@ -156,6 +154,7 @@ class Invitee(context: Context<*>, me: Pairwise.Me, myEndpoint: Endpoint) : Base
                 }
             }
         } catch (ex: Exception) {
+            ExceptionHandler.handleException(ex)
             ex.printStackTrace()
         }
         return null

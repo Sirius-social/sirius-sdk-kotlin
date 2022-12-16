@@ -20,7 +20,9 @@ class TheirEndpointMobileCoProtocolTransport(var agent: MobileAgent, var myVerke
 
     override suspend fun sendAndWait(message: Message): Pair<Boolean, Message?> {
         println("sendAndWait resTheirEndpointMobileCoProtocolTransport =")
-        send(message)
+        if (!send(message)){
+            Pair(false, null)
+        }
         val r: GetOneResult? = one
         return if (r != null) {
             //if (r.senderVerkey.equals(endpoint.getVerkey())) {
