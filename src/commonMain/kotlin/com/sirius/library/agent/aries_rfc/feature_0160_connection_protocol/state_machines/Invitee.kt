@@ -128,7 +128,11 @@ class Invitee(context: Context<*>, me: Pairwise.Me, myEndpoint: Endpoint) : Base
                         } else if (second is ConnProblemReport) {
                             problemReport = second
                             log.info("100% - Terminated with error. " + problemReport!!.getMessageObjec())
-                            null
+
+                            throw StateMachineTerminatedWithError(
+                                RESPONSE_NOT_ACCEPTED,
+                                "Unexpected message from Inviter: " + second?.getType()
+                            )
                         } else {
                             throw StateMachineTerminatedWithError(
                                 RESPONSE_NOT_ACCEPTED,

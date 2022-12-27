@@ -18,7 +18,8 @@ actual class NonSecretsMobile actual constructor(val wallet: LocalWallet) : Abst
                 .get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: java.lang.Exception) {
             if (e.message != null) {
-                if (!e.message!!.contains("WalletItemAlreadyExists")) e.printStackTrace()
+                e.printStackTrace()
+               // if (!e.message!!.contains("WalletItemAlreadyExists")) e.printStackTrace()
             } else {
                 e.printStackTrace()
             }

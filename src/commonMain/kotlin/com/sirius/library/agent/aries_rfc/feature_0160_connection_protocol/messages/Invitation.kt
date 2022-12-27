@@ -54,7 +54,8 @@ class Invitation(msg: String) : ConnProtocolMessage(msg) {
 
     fun invitationUrl(): String {
         val codec = StringCodec()
-        val b64Invite = codec.fromByteArrayToASCIIString(Base64.getUrlEncoder().encode(codec.fromASCIIStringToByteArray(getMessageObjec().toString())))
+        val escapedMessage =  StringCodec().escapeStringLikePython(getMessageObjec().toString())
+        val b64Invite = codec.fromByteArrayToASCIIString(Base64.getUrlEncoder().encode(codec.fromASCIIStringToByteArray(escapedMessage)))
         return "?c_i=$b64Invite"
     }
 

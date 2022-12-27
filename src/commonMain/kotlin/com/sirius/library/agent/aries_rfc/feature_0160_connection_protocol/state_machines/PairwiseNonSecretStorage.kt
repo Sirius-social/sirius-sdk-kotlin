@@ -1,5 +1,6 @@
 package com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.state_machines
 
+import com.sirius.library.agent.pairwise.Pairwise
 import com.sirius.library.agent.wallet.abstract_wallet.model.RetrieveRecordOptions
 import com.sirius.library.hub.Context
 import com.sirius.library.utils.JSONObject
@@ -7,6 +8,28 @@ import com.sirius.library.utils.JSONObject
 
 internal object PairwiseNonSecretStorage {
     private const val NON_SECRET_PERSISTENT_0160_PW = "NON_SECRET_PERSISTENT_0160_PW"
+    private const val NON_SECRET_PERSISTENT_0160_PW_CONNECTION = "0160_PW_CONNECTION"
+
+    fun optTheirDidByConnectionKey(
+        context: Context<*>,
+        connectionKeyBase58: String?
+    ): String? {
+        try {
+            val query = JSONObject()
+            query.put("connectionKey", connectionKeyBase58)
+            val opts = RetrieveRecordOptions(false, true, false)
+            val second = context.nonSecrets
+                .getWalletRecord(NON_SECRET_PERSISTENT_0160_PW_CONNECTION, connectionKeyBase58,opts)
+            return if (second == null) null else
+                JSONObject(
+                    second
+                ).optString("value")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
     fun optValueByConnectionKey(
         context: Context<*>,
         connectionKeyBase58: String?
@@ -49,6 +72,23 @@ internal object PairwiseNonSecretStorage {
         return null
     }
 
+    fun write(context: Context<*>, connectionKey: String?, pairwise: Pairwise?) {
+       val theirDid =  pairwise?.their?.did
+        if (optTheirDidByConnectionKey(context, connectionKey) != null) {
+            context.nonSecrets.updateWalletRecordValue(
+                NON_SECRET_PERSISTENT_0160_PW_CONNECTION,
+                connectionKey,
+                theirDid
+            )
+        }else{
+            context.nonSecrets.addWalletRecord(
+                NON_SECRET_PERSISTENT_0160_PW_CONNECTION,
+                connectionKey,
+                theirDid,
+              null
+            )
+        }
+    }
     fun write(context: Context<*>, connectionKeyBase58: String?, pairwise: JSONObject) {
         var theirVk = ""
         if (pairwise.has("their")) {

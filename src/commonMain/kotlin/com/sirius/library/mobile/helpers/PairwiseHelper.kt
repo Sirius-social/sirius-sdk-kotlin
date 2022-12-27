@@ -5,6 +5,7 @@ package com.sirius.library.mobile.helpers
 
 
 
+import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.state_machines.PairwiseNonSecretStorage
 import com.sirius.library.agent.pairwise.Pairwise
 import com.sirius.library.agent.pairwise.WalletPairwiseList
 import com.sirius.library.mobile.SiriusSDK
@@ -22,6 +23,13 @@ object PairwiseHelper {
 
 
 
+    fun getPairwiseByConnectionKey(connectionKey : String?) : Pairwise?{
+        SiriusSDK.context?.let {
+            val did = PairwiseNonSecretStorage.optTheirDidByConnectionKey(it, connectionKey)
+            return getPairwise(theirDid = did)
+        }
+        return null
+    }
 
     fun getAllPairwise(): List<Pairwise> {
         val list =

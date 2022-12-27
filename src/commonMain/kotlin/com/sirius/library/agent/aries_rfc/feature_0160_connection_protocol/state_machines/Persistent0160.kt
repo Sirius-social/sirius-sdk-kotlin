@@ -9,7 +9,7 @@ import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.messa
 import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.state_machines.PairwiseNonSecretStorage.optConnectionKeyByTheirVerkey
 import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.state_machines.PairwiseNonSecretStorage.optValueByConnectionKey
 import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.state_machines.PairwiseNonSecretStorage.remove
-import com.sirius.library.agent.aries_rfc.feature_0160_connection_protocol.state_machines.PairwiseNonSecretStorage.write
+
 import com.sirius.library.agent.connections.Endpoint
 import com.sirius.library.agent.listener.Event
 import com.sirius.library.agent.pairwise.Pairwise
@@ -54,7 +54,7 @@ object Persistent0160 {
             "their", JSONObject()
                 .put("label", invitation.label())
         )
-        write(context, connectionKey, pairwise)
+        PairwiseNonSecretStorage.write(context, connectionKey, pairwise)
         context.sendMessage(
             request, listOf(connectionKey), invitation.endpoint(),
             second, listOf()
@@ -107,7 +107,7 @@ object Persistent0160 {
                         .put("routing_keys", theirInfo.routingKeys)
                 ).put("did_doc", theirDidDoc)
         )
-        write(context, connectionKeyBase58, pairwise)
+        PairwiseNonSecretStorage.write(context, connectionKeyBase58, pairwise)
         return response
     }
 
@@ -160,6 +160,7 @@ object Persistent0160 {
         val jsonPw: JSONObject? = optValueByConnectionKey(context, connectionKey)
         jsonPw?.put("their", their)
         val pairwise: Pairwise = createPairwiseObject(jsonPw)
+        PairwiseNonSecretStorage.write(context, connectionKey,pairwise)
         remove(context, connectionKey)
         return pairwise
     }
@@ -170,6 +171,7 @@ object Persistent0160 {
         if (connectionKey.isNullOrEmpty()) return null
         val jsonPw: JSONObject = optValueByConnectionKey(context, connectionKey) ?: return null
         val pairwise: Pairwise = createPairwiseObject(jsonPw)
+        PairwiseNonSecretStorage.write(context, connectionKey,pairwise)
         remove(context, connectionKey)
         return pairwise
     }
