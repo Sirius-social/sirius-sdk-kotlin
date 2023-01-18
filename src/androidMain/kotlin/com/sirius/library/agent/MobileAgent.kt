@@ -23,7 +23,10 @@ import org.hyperledger.indy.sdk.pool.Pool
 import org.hyperledger.indy.sdk.wallet.Wallet
 
 
-actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCredentials: JSONObject?) :
+actual class MobileAgent actual constructor(
+    walletConfig: JSONObject?,
+    walletCredentials: JSONObject?
+) :
     AbstractAgent() {
     actual var walletConfig: JSONObject? = null
     actual var walletCredentials: JSONObject? = null
@@ -65,13 +68,14 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
          }
      }*/
     actual var indyWallet: LocalWallet? = null
-    actual var webSockets: MutableMap<String, WebSocketConnector> = HashMap<String, WebSocketConnector>()
+    actual var webSockets: MutableMap<String, WebSocketConnector> =
+        HashMap<String, WebSocketConnector>()
 
     actual inner class MobileAgentEvents : AgentEvents {
         actual var future: CompletableFutureKotlin<Message?>? = null
         actual override fun pull(): CompletableFutureKotlin<Message?>? {
             future = CompletableFutureKotlin<Message?>()
-            println("MobileAgentEvents puull future="+future)
+            println("MobileAgentEvents puull future=" + future)
             return future
         }
     }
@@ -93,32 +97,39 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
             indyWallet = Wallet.openWallet(walletConfig.toString(), walletCredentials.toString())
                 .get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: java.lang.Exception) {
-            if (!e.message!!.contains("WalletAlreadyOpenedException")) e.printStackTrace()
+            if (e.message?.contains("WalletAlreadyOpenedException") != true) {
+                e.printStackTrace()
+                ExceptionHandler.handleException(e)
+            }
         }
-        if (indyWallet != null) {
-            wallet = MobileWallet(indyWallet!!)
-        }
-        pairwiseList = WalletPairwiseList(wallet!!.pairwise, wallet!!.did)
-        if (storage == null) {
-            storage = InWalletImmutableCollection(wallet!!.nonSecrets)
-        }
-        for (network in networks.orEmpty()) {
-            ledgers.put(
-                network,
-                Ledger(network, wallet!!.ledger, wallet!!.anoncreds, wallet!!.cache, storage!!)
-            )
+        try{
+            if (indyWallet != null) {
+                wallet = MobileWallet(indyWallet!!)
+            }
+            pairwiseList = WalletPairwiseList(wallet!!.pairwise, wallet!!.did)
+            if (storage == null) {
+                storage = InWalletImmutableCollection(wallet!!.nonSecrets)
+            }
+            for (network in networks.orEmpty()) {
+                ledgers.put(
+                    network,
+                    Ledger(network, wallet!!.ledger, wallet!!.anoncreds, wallet!!.cache, storage!!)
+                )
+            }
+        } catch (e: java.lang.Exception) {
+            ExceptionHandler.handleException(e)
         }
     }
 
-     actual val networks: List<String>?
-         get() {
+    actual val networks: List<String>?
+        get() {
             try {
                 val str: String =
                     Pool.listPools().get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
                 val arr: JSONArray = JSONArray(str)
                 val networks: MutableList<String> = ArrayList<String>()
                 for (o in arr) {
-                    println("o="+o)
+                    println("o=" + o)
                     if (o is JSONObject) {
                         val poolString = (o as JSONObject).optString("pool")
                         poolString?.let {
@@ -144,14 +155,14 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
         endpoint: String,
         my_vk: String?,
         routing_keys: List<String?>?
-    ) : Boolean {
+    ): Boolean {
         if (routing_keys?.isEmpty() == false) throw java.lang.RuntimeException("Not yet supported!")
         println("sendMessage their_vk=" + their_vk)
         println("sendMessage my_vk=" + my_vk)
         val cryptoMsg = packMessage(message ?: Message(), my_vk, their_vk.orEmpty())
         if (sender != null) {
             val isSend = sender!!.sendTo(endpoint, cryptoMsg)
-            return  isSend
+            return isSend
             //return new Pair<>(isSend, null);
         }
         return false
@@ -160,10 +171,16 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
     actual suspend fun sendMessage(
         message: Message?,
         endpoint: String?
-    ) : Boolean{
-       // val cryptoMsg = packMessage(message ?: Message(), my_vk, their_vk.orEmpty())
-        if (sender != null && endpoint!=null) {
-            val isSend = sender!!.sendTo(endpoint, StringUtils.stringToBytes(message?.getMessageObjec().toString(), StringUtils.CODEC.UTF_8))
+    ): Boolean {
+        // val cryptoMsg = packMessage(message ?: Message(), my_vk, their_vk.orEmpty())
+        if (sender != null && endpoint != null) {
+            val isSend = sender!!.sendTo(
+                endpoint,
+                StringUtils.stringToBytes(
+                    message?.getMessageObjec().toString(),
+                    StringUtils.CODEC.UTF_8
+                )
+            )
             return isSend
         }
         return false
@@ -196,8 +213,8 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
         try {
             println(" receivers.toString()=" + receivers.toString())
             println(" myVk=" + myVk)
-           println("  StringUtils.stringToBytes(msg.messageObj.toString(), UTF_8)=" + msg.messageObj.toString())
-           val escapedMessage =  StringCodec().escapeStringLikePython(msg.messageObj.toString())
+            println("  StringUtils.stringToBytes(msg.messageObj.toString(), UTF_8)=" + msg.messageObj.toString())
+            val escapedMessage = StringCodec().escapeStringLikePython(msg.messageObj.toString())
             println("  escapedMessage, UTF_8)=" + escapedMessage)
             return Crypto.packMessage(
                 indyWallet, receivers.toString(),
@@ -217,7 +234,7 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
                 unpackedMessageBytes =
                     Crypto.unpackMessage(indyWallet, bytes)
                         .get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
-                println("Chipre String(unpackedMessageBytes)="+String(unpackedMessageBytes))
+                println("Chipre String(unpackedMessageBytes)=" + String(unpackedMessageBytes))
                 val unpackedMessage: JSONObject = JSONObject(String(unpackedMessageBytes))
                 eventMessage =
                     JSONObject().put(
@@ -234,7 +251,7 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
             } else {
                 unpackedMessageBytes = bytes
                 val unpackedMessage: JSONObject = JSONObject(String(unpackedMessageBytes))
-                println("String(unpackedMessageBytes)="+String(unpackedMessageBytes))
+                println("String(unpackedMessageBytes)=" + String(unpackedMessageBytes))
                 eventMessage =
                     JSONObject().put(
                         "@type",
@@ -308,7 +325,10 @@ actual  class MobileAgent actual constructor(walletConfig: JSONObject?, walletCr
     actual override fun release() {}
 
 
-    actual override fun spawn(my_verkey: String, endpoint: TheirEndpoint): AbstractCoProtocolTransport? {
+    actual override fun spawn(
+        my_verkey: String,
+        endpoint: TheirEndpoint
+    ): AbstractCoProtocolTransport? {
         return TheirEndpointMobileCoProtocolTransport(this, my_verkey, endpoint)
     }
 

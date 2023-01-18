@@ -88,7 +88,7 @@ actual class MobileAgent actual constructor(
             Wallet.createWallet(walletConfig.toString(), walletCredentials.toString())
                 .get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: java.lang.Exception) {
-            if (e.message?.contains("WalletExistsException")!=true) e.printStackTrace()
+            if (e.message?.contains("WalletExistsException") != true) e.printStackTrace()
         }
     }
 
@@ -97,21 +97,28 @@ actual class MobileAgent actual constructor(
             indyWallet = Wallet.openWallet(walletConfig.toString(), walletCredentials.toString())
                 .get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: java.lang.Exception) {
-        //    e.printStackTrace()
-            if (e.message?.contains("WalletAlreadyOpenedException") != true) e.printStackTrace()
+             if (e.message?.contains("WalletAlreadyOpenedException") != true) {
+                 e.printStackTrace()
+                 ExceptionHandler.handleException(e)
+             }
         }
-        if (indyWallet != null) {
-            wallet = MobileWallet(indyWallet!!)
-        }
-        pairwiseList = WalletPairwiseList(wallet!!.pairwise, wallet!!.did)
-        if (storage == null) {
-            storage = InWalletImmutableCollection(wallet!!.nonSecrets)
-        }
-        for (network in networks.orEmpty()) {
-            ledgers.put(
-                network,
-                Ledger(network, wallet!!.ledger, wallet!!.anoncreds, wallet!!.cache, storage!!)
-            )
+        try{
+            if (indyWallet != null) {
+                wallet = MobileWallet(indyWallet!!)
+            }
+            pairwiseList = WalletPairwiseList(wallet!!.pairwise, wallet!!.did)
+            if (storage == null) {
+                storage = InWalletImmutableCollection(wallet!!.nonSecrets)
+            }
+            for (network in networks.orEmpty()) {
+                ledgers.put(
+                    network,
+                    Ledger(network, wallet!!.ledger, wallet!!.anoncreds, wallet!!.cache, storage!!)
+                )
+            }
+        } catch (e: java.lang.Exception) {
+            ExceptionHandler.handleException(e)
+            e.printStackTrace()
         }
     }
 
@@ -159,13 +166,13 @@ actual class MobileAgent actual constructor(
             return isSend
             //return new Pair<>(isSend, null);
         }
-        return  false
+        return false
     }
 
-    actual suspend fun  sendMessage(
+    actual suspend fun sendMessage(
         message: Message?,
         endpoint: String?
-    ) : Boolean {
+    ): Boolean {
         if (sender != null && endpoint != null) {
             val isSend = sender!!.sendTo(
                 endpoint,
