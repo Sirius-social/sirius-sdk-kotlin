@@ -96,13 +96,13 @@ actual class MobileAgent actual constructor(
         try {
             indyWallet = Wallet.openWallet(walletConfig.toString(), walletCredentials.toString())
                 .get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
-        } catch (e: java.lang.Exception) {
-            if (e.message?.contains("WalletAlreadyOpenedException") != true) {
-                e.printStackTrace()
-                ExceptionHandler.handleException(e)
-            }
-        }
-        try{
+    //    } catch (e: java.lang.Exception) {
+         //   if (e.message?.contains("WalletAlreadyOpenedException") != true) {
+        //        e.printStackTrace()
+        //        ExceptionHandler.handleException(e)
+        //    }
+       // }
+      //  try{
             if (indyWallet != null) {
                 wallet = MobileWallet(indyWallet!!)
             }
@@ -222,6 +222,7 @@ actual class MobileAgent actual constructor(
             ).get(timeoutSec.toLong(), java.util.concurrent.TimeUnit.SECONDS)
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
+            ExceptionHandler.handleException(e)
         }
         return null
     }

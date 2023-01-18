@@ -15,10 +15,18 @@ object ExceptionHandler {
 
     val oneTimeExceptionListener : MutableSet<ExceptionListener> = mutableSetOf()
     val noExpireExceptionListener : MutableSet<ExceptionListener> = mutableSetOf()
+    fun addnoExpireExceptionListener(listener : ExceptionListener){
+        noExpireExceptionListener.add(listener)
+    }
+
+    fun removeExpireExceptionListener(listener : ExceptionListener){
+        noExpireExceptionListener.remove(listener)
+    }
 
     fun addOneTimeListener(listener : ExceptionListener){
         oneTimeExceptionListener.add(listener)
     }
+
 
     fun removeOneTimeListener(listener : ExceptionListener){
         oneTimeExceptionListener.remove(listener)
