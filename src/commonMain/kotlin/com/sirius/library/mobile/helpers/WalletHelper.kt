@@ -4,7 +4,8 @@ package com.sirius.library.mobile.helpers
 
 import com.sirius.library.agent.wallet.LocalWallet
 import com.sirius.library.hub.MobileContext
-
+import com.sirius.library.utils.FileUtils
+import io.ktor.http.ContentDisposition.Companion.File
 
 
 /**
@@ -30,6 +31,18 @@ object WalletHelper  {
         this.exportdirPath = mainDirPath// + File.separator + "export"
         this.genesisPath = mainDirPath //+ File.separator + "genesis"
     }
+
+
+    fun deleteDefaultWallet(userJid: String?) {
+        try {
+            FileUtils.forceDelete(dirPath,"defaultWalletLogin")
+            //   FileUtils.deleteDirectory(projDir)
+        } catch (e: Exception) {
+          //  System.out.println("mylog2080 deleteWallet dirPath + File.separator + alias=" + e.message)
+            e.printStackTrace()
+        }
+    }
+
 /*
     fun exportWallet(userJid: String) {
         try {
@@ -49,19 +62,6 @@ object WalletHelper  {
         }
     }
 
-    fun deleteExportedWallet(userJid: String) {
-        try {
-            //TODO REFACTOR WITH LAYERS
-            val alias = HashUtils.generateHash(userJid)
-            val walletId = alias.substring(IntRange(0, 8))
-            val projDir = File(exportdirPath + File.separator + "wallet_" + walletId)
-            FileUtils.forceDelete(projDir)
-            //   FileUtils.deleteDirectory(projDir)
-        } catch (e: java.lang.Exception) {
-            System.out.println("mylog2080 deleteWallet dirPath + File.separator + alias=" + e.message)
-            e.printStackTrace()
-        }
-    }
 
 
     fun isExportedWalletExist(jid: String): Boolean {
